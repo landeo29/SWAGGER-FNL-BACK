@@ -1,43 +1,25 @@
-import { DataTypes, Model, Sequelize } from "sequelize";
+import { AllowNull, BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
+import { User } from "../User/user";
+import { EstresNiveles } from "./estres_niveles";
 
-class UserEstresSession extends Model {
-  static initModel(sequelize: Sequelize): typeof UserEstresSession {
-    super.init(
-      {
-        id: {
-          type: DataTypes.INTEGER,
-          autoIncrement: true,
-          primaryKey: true, // Clave primaria autoincremental
-        },
-        user_id: {
-          type: DataTypes.INTEGER,
-          allowNull: false, // Campo obligatorio
-          references: {
-            model: "users", // Referencia a la tabla de usuarios
-            key: "id",
-          },
-          onUpdate: "CASCADE", // Actualización en cascada
-          onDelete: "CASCADE", // Eliminación en cascada
-        },
-        estres_nivel_id: {
-          type: DataTypes.INTEGER,
-          allowNull: false, // Campo obligatorio
-          references: {
-            model: "estres_niveles", // Referencia a la tabla de niveles de estrés
-            key: "id",
-          },
-          onUpdate: "CASCADE", // Actualización en cascada
-          onDelete: "CASCADE", // Eliminación en cascada
-        },
-      },
-      {
-        sequelize,
-        timestamps: false, // Si no necesitas `createdAt` y `updatedAt`
-        tableName: "user_estres_sessions", // Nombre de la tabla en la base de datos
-      }
-    );
-    return this;
-  }
+@Table({
+  timestamps: false,
+  tableName: "user_estres_sessions"
+})
+export class UserEstresSession extends Model {
+  @ForeignKey(() => User)
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  user_id!: number;
+
+  @BelongsTo(() => User)
+  user!: User;
+
+  @ForeignKey(() => EstresNiveles)
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  estres_nivel_id!: number;
+
+  @BelongsTo(() => EstresNiveles)
+  estres_nivel!: EstresNiveles; 
 }
-
-export default UserEstresSession;

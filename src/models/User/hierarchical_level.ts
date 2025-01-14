@@ -1,23 +1,17 @@
-import { DataTypes, Model, Sequelize } from "sequelize";
+import {
+  AllowNull,
+  Column,
+  DataType,
+  Model,
+  Table,
+} from "sequelize-typescript";
 
-class Hierarchical_level extends Model {
-  static initModel(sequelize: Sequelize): typeof Hierarchical_level {
-    super.init(
-      {
-        level: {
-          type: DataTypes.STRING,
-          allowNull: false,
-        },
-      }, // attributes
-      {
-        sequelize,
-        timestamps: false,
-        tableName: "hierarchical_level",
-      }
-    );
-
-    return this;
-  }
+@Table({
+  timestamps: false,
+  tableName: "hierarchical_level",
+})
+export class Hierarchical_level extends Model {
+  @AllowNull(false)
+  @Column(DataType.STRING)
+  level!: string;
 }
-
-export default Hierarchical_level;

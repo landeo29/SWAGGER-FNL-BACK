@@ -1,128 +1,122 @@
-import { DataTypes, Model, Sequelize } from "sequelize";
+import {
+  AllowNull,
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  Length,
+  Model,
+  Table,
+} from "sequelize-typescript";
+import { User } from "../User/user";
 
-class Test_estres extends Model {
-  static initModel(sequelize: Sequelize): typeof Test_estres {
-    super.init(
-      {
-        id: {
-          type: DataTypes.INTEGER,
-          autoIncrement: true,
-          primaryKey: true, // Clave primaria autoincremental
-        },
-        user_id: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-          references: {
-            model: "users", // Referencia a la tabla users
-            key: "id",
-          },
-        },
-        pregunta_1: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_2: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_3: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_4: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_5: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_6: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_7: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_8: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_9: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_10: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_11: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_12: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_13: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_14: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_15: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_16: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_17: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_18: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_19: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_20: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_21: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_22: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        pregunta_23: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        estado: {
-          type: DataTypes.STRING(20),
-          allowNull: true,
-        },
-      }, // attributes
-      {
-        sequelize,
-        timestamps: false,  
-        tableName: 'test_estres', 
-      }
-    );
+@Table({
+  timestamps: false,
+  tableName: "test_estres",
+})
+export class TestEstres extends Model {
+  @ForeignKey(() => User)
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  user_id!: number;
 
-    return this;
-  }
+  @BelongsTo(() => User)
+  user!: User;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_1!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_2!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_3!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_4!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_5!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_6!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_7!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_8!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_9!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_10!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_11!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_12!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_13!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_14!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_15!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_16!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_17!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_18!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_19!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_20!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_21!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_22!: number;
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  pregunta_23!: number;
+
+  @AllowNull(true)
+  @Length({ min: 2, max: 20 })
+  @Column(DataType.STRING)
+  estado!: string;
 }
-
-export default Test_estres;

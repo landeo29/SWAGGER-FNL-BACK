@@ -1,7 +1,8 @@
-import app from './app'
-import database from './config/database'
 import { config } from 'dotenv'
 config()
+import app from './app'
+import database from './config/database'
+
 
 async function main (): Promise<void> {
   try {

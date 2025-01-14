@@ -1,74 +1,56 @@
-import { DataTypes, Model, Sequelize } from "sequelize";
+import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, Length, Model, Table } from "sequelize-typescript";
+import { User } from "../User/user";
 
-class UserPrograma extends Model {
-  static initModel(sequelize: Sequelize): typeof UserPrograma {
-    super.init(
-      {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-          },
-          user_id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            references: {
-              model: 'users',  // Relacionado con la tabla 'users'
-              key: 'id',
-            },
-            onUpdate: 'CASCADE',
-            onDelete: 'CASCADE',
-          },
-          dia: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-          },
-          nombre_tecnica: {
-            type: DataTypes.STRING(255),
-            allowNull: false,
-          },
-          tipo_tecnica: {
-            type: DataTypes.STRING(255),
-            allowNull: false,
-          },
-          descripcion: {
-            type: DataTypes.TEXT,
-            allowNull: false,
-          },
-          guia: {
-            type: DataTypes.TEXT,
-            allowNull: false,
-          },
-          comentario: {
-            type: DataTypes.TEXT,  // Comentarios del usuario sobre la técnica
-            allowNull: true,
-          },
-          estrellas: {
-            type: DataTypes.INTEGER,  // Calificación con estrellas
-            allowNull: true,  // Puedes ajustarlo si prefieres que sea obligatorio
-            validate: {
-              min: 1,  // Validación para asegurarse de que la calificación sea al menos 1
-              max: 5,  // Validación para asegurarse de que la calificación no supere 5
-            },
-          },
-          start_date: {
-            type: DataTypes.DATE,
-            allowNull: true,
-            defaultValue: null,  // Valor por defecto de la fecha de inicio es el momento actual
-          },
-          completed_date: {
-            type: DataTypes.DATE,
-            allowNull: true,
-            defaultValue: null,  // Valor por defecto de la fecha de inicio es el momento actual
-          },
-      },
-      {
-        sequelize,
-        timestamps: false,
-        tableName: 'userprograma',
-      }
-    );
-    return this;
-  }
+@Table({
+  timestamps: false,
+  tableName: "userprograma"
+})
+export class UserPrograma extends Model {
+  
+  @ForeignKey(() => User)
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  user_id!: number;
+
+  @BelongsTo(() => User)
+  user!: User;
+
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  dia!: number;
+
+  @AllowNull(false)
+  @Column(DataType.STRING)
+  nombre_tecnica!: string;
+
+  @AllowNull(false)
+  @Column(DataType.STRING)
+  tipo_tecnica!: string;
+
+  @AllowNull(false)
+  @Column(DataType.TEXT)
+  descripcion!: string;
+
+  @AllowNull(false)
+  @Column(DataType.TEXT)
+  guia!: string;
+
+  @AllowNull(false)
+  @Column(DataType.TEXT)
+  comentario!: string;
+
+  @AllowNull(true)
+  @Length({min: 1, max:5})
+  @Column(DataType.INTEGER)
+  estrellas!: number
+
+  @AllowNull(true)
+  @Default(null)
+  @Column(DataType.DATE)
+  start_date!: Date;
+
+  @AllowNull(true)
+  @Default(null)
+  @Column(DataType.DATE)
+  completed_date!: Date;
 }
-export default UserPrograma;

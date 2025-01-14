@@ -1,36 +1,36 @@
-import { Sequelize, Dialect } from "sequelize";
-import models from '../models/models';
+import { Sequelize } from "sequelize-typescript";
+import { Dialect } from "sequelize";
+import models from "../models/models";
 
 class Database {
   private connection: Sequelize | null;
   
   constructor() {
-    this.connection = new Sequelize(
-      process.env.DB_NAME || 'fnl',
-      process.env.DB_USER || 'paul',
-      process.env.DB_PASSWORD || 'paulp',
-      {
-        host: process.env.DB_HOST || 'localhost',
-        dialect: (process.env.DB_DIALECT as Dialect) || 'mysql',
-        port: parseInt(process.env.DB_PORT || '3306'),
-        retry: { max: 3 },
-      }
-    );
+    this.connection = null;
     this.init();
   }
 
   init() {
     try {
-      Object.values(models).forEach((model: any) => {
-        if(typeof model.initModel === "function"){
-          model.initModel(this.connection)
+      const name = process.env.DB_NAME || 'fnlprueba'
+      console.log(name)
+      const user = process.env.DB_USER || 'paul'
+      const password = process.env.DB_PASSWORD || 'paulp'
+      const host = process.env.DB_HOST || 'localhost'
+      const dialect = (process.env.DB_DIALECT as Dialect) || 'mysql'
+      const port = parseInt(process.env.DB_PORT || '3306')
+      this.connection = new Sequelize(
+        name,
+        user,
+        password,
+        {
+          host,
+          dialect,
+          port,
+          retry: { max: 3 },
+          models
         }
-      });
-      Object.values(models).forEach((model: any) => {
-        if (typeof model.associate === "function") {
-          model.associate(models);
-        }
-      });
+      );
     } catch (error) {
       console.error("Error al conectar a la base de datos:", error);
     }
@@ -42,7 +42,7 @@ class Database {
       console.log("Conexión a la base de datos establecida correctamente.");
 
       // Sincronizar los modelos con la base de datos
-      await this.connection?.sync({ alter: false });
+      await this.connection?.sync({ alter: true });
       console.log("Base de datos sincronizada correctamente.");
 
     } catch (err) {
@@ -55,6 +55,9 @@ class Database {
         port: process.env.DB_PORT,
       });
     }
+  }
+  public getConnection(){
+    return this.connection
   }
 }
 

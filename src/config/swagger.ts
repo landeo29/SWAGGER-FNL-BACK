@@ -10,6 +10,9 @@ const swaggerDefinition: OAS3Definition = {
     {
       url: "http://localhost:3000",
     },
+    {
+      url:"https://fnlapi.com"
+    }
   ],
   components: {
     securitySchemes: {
@@ -19,20 +22,125 @@ const swaggerDefinition: OAS3Definition = {
       },
     },
     schemas: {
-      User: {
-        type: "object",
-        properties: {
-          id: {
-            type: "integer",
-            format: "int64",
-            example: 10,
-          },
-          name:{
+      login:{
+        type:"object",
+        properties:{
+          username:{
             type:"string",
             example:"paul"
+          },
+          password:{
+            type:"string",
+            example:"contrasena"
+          }
+        }
+      },
+      user: {
+        type: "object",
+        properties: {
+          username:{
+            type:"string",
+            example:"paul"
+          },
+          password:{
+            type:"string",
+            example:"contrasena"
+          },
+          email:{
+            type:"string",
+            example:"example@gmail.com"
           }
         },
       },
+      userProfile:{
+        type:"object",
+        properties:{
+          username:{
+            type:"string",
+            example:"paul"
+          },
+          email:{
+            type:"string",
+            example:"example@gmail.com"
+          },
+          profileImage:{
+            type:"string",
+            format: "binary"
+          }
+        }
+      },
+      userResponse:{
+        type: "object",
+        properties:{
+          user_id:{
+            type: "int64",
+            example: 2
+          },
+          age_range_id:{
+            type: "int64",
+            example: 2
+          },
+          hierarchical_level_id:{
+            type: "int64",
+            example: 2
+          },
+          responsability_level_id:{
+            type: "int64",
+            example: 2
+          },
+          gender_id:{
+            type: "int64",
+            example: 2
+          },
+          created_at:{
+            type: "string",
+            format: "date-time"
+          }
+        }
+      },
+      estresTecnica:{
+        type: "object",
+        properties:{
+          nombre:{
+            type:"string",
+            example:"nombre_ejemplo"
+          },
+          mensaje:{
+            type:"string",
+            example:"mensaje_ejemplo"
+          },
+          steps:{
+            type:"string",
+            example:"steps_ejemplo"
+          },
+          tipo:{
+            type:"string",
+            example:"tipo_ejemplo"
+          },
+          icon:{
+            type:"string",
+            example:"icon_ejemplo"
+          },
+          tipotecnicas_id:{
+            type: "int64",
+            example: 2
+          },
+        }
+      },
+      userPrograma:{
+        user_id:{
+          type: "int64",
+          example: 2
+        },
+        estrestecnicas_id:{
+          type: "int64",
+          example: 2
+        },
+        dia:{
+          type: "string",
+          format: "date-time"
+        }
+      }
     },
   },
 };

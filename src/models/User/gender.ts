@@ -1,22 +1,18 @@
-import { DataTypes, Model, Sequelize } from 'sequelize';
+import {
+  AllowNull,
+  Column,
+  DataType,
+  Model,
+  Table,
+} from "sequelize-typescript";
 
-class Gender extends Model {
-  static initModel(sequelize: Sequelize): typeof Gender {
-    super.init(
-      {
-        gender:{
-            type: DataTypes.STRING,
-            allowNull: false
-        }
-      }, // attributes
-      {
-        sequelize,
-        timestamps: false,
-        tableName: 'gender'
-      }
-    );
-    return this;
-  }
+@Table({
+  timestamps: false,
+  tableName: "gender"
+})
+export class Gender extends Model {
+  
+  @AllowNull(false)
+  @Column(DataType.STRING)
+  gender!: string;
 }
-
-export default Gender;

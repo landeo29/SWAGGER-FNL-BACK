@@ -1,23 +1,17 @@
-import { DataTypes, Model, Sequelize } from 'sequelize';
+import {
+  AllowNull,
+  Column,
+  DataType,
+  Model,
+  Table,
+} from "sequelize-typescript";
 
-class ResponsabilityLevel extends Model {
-  static initModel(sequelize: Sequelize): typeof ResponsabilityLevel {
-    super.init(
-      {
-        level: {
-            type: DataTypes.STRING,
-            allowNull: false,
-          },
-      }, // attributes
-      {
-        sequelize,
-        timestamps: false,
-        tableName: 'responsability_level', 
-      }
-    );
-
-    return this;
-  }
+@Table({
+  timestamps: false,
+  tableName: "responsability_level",
+})
+export class ResponsabilityLevel extends Model {
+  @AllowNull(false)
+  @Column(DataType.STRING)
+  level!: string;
 }
-
-export default ResponsabilityLevel;

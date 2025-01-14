@@ -1,63 +1,46 @@
-import { DataTypes, Model, Sequelize } from "sequelize";
+import { AllowNull, BelongsTo, Column, DataType, ForeignKey, Length, Model, Table } from "sequelize-typescript";
+import { TipoTecnicas } from "./tipotecnicas";
+import { User } from "../User/user";
 
-class EstresTecnicas extends Model {
-  static initModel(sequelize: Sequelize): typeof EstresTecnicas {
-    super.init(
-      {
-        id: {
-          type: DataTypes.INTEGER,
-          autoIncrement: true,
-          primaryKey: true, // Clave primaria autoincremental
-        },
-        nombre: {
-          type: DataTypes.STRING(255),
-          allowNull: false, // El nombre no puede ser nulo
-        },
-        mensaje: {
-          type: DataTypes.TEXT, // Campo de texto para el mensaje
-          allowNull: true, // Puede ser nulo si no hay mensaje
-        },
-        steps: {
-          type: DataTypes.TEXT, // Campo de texto para almacenar los pasos
-          allowNull: true, // Los pasos pueden ser nulos
-        },
-        tipo: {
-          type: DataTypes.STRING(45), // Máximo 45 caracteres para el campo "tipo"
-          allowNull: true, // Puede ser nulo si no hay tipo definido
-        },
-        icon: {
-          type: DataTypes.STRING(255),
-          allowNull: true, // El nombre no puede ser nulo
-        },
-        tipotecnicas_id: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-          references: {
-            model: "tipotecnicas", // Nombre de la tabla referenciada
-            key: "id", // Clave primaria de la tabla tipotecnicas
-          },
-          onUpdate: "CASCADE",
-          onDelete: "CASCADE", // Borra la técnica si se elimina el tipo de técnica
-        },
-        user_id: {
-          // Nuevo campo para el usuario
-          type: DataTypes.INTEGER,
-          allowNull: false,
-          references: {
-            model: "users",
-            key: "id",
-          },
-          onUpdate: "CASCADE",
-          onDelete: "CASCADE",
-        },
-      },
-      {
-        sequelize,
-        timestamps: false,  // Si no necesitas `createdAt` y `updatedAt`
-        tableName: 'estrestecnicas',  // Nombre de la tabla en la base de datos
-      }
-    );
-    return this;
-  }
+@Table({
+  timestamps: false,
+  tableName: "estrestecnicas"
+})
+export class EstresTecnicas extends Model {
+  @AllowNull(false)
+  @Column(DataType.STRING)
+  nombre!: string;
+
+  @AllowNull(true)
+  @Column(DataType.TEXT)
+  mensaje!: string;
+
+  @AllowNull(true)
+  @Column(DataType.TEXT)
+  steps!: string;
+
+  @AllowNull(true)
+  @Length({min:2, max:45})
+  @Column(DataType.STRING)
+  tipo!: string;
+
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  icon!: string;
+
+  @ForeignKey(() => TipoTecnicas)
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  tipotecnicas_id!: number;
+  
+  @BelongsTo(() => TipoTecnicas)
+  tipotecnicas!: TipoTecnicas;
+
+  @ForeignKey(() => User)
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  user_id!: number
+
+  @BelongsTo(() => User)
+  user!: User;
 }
-export default EstresTecnicas;

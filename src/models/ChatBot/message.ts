@@ -1,60 +1,55 @@
-import { DataTypes, Model, Sequelize } from "sequelize";
-import User from "../User/user";
+import { User } from "../User/user";
+import {
+  AllowNull,
+  BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  ForeignKey,
+  Model,
+  Table,
+} from "sequelize-typescript";
 
-class Message extends Model {
-  static initModel(sequelize: Sequelize): typeof Message {
-    super.init(
-      {
-        content: {
-          type: DataTypes.TEXT,
-          allowNull: false,
-        },
-        user_id: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-          references: {
-            model: User,
-            key: "id",
-          },
-        },
-        user_id_receptor: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-          references: {
-            model: User,
-            key: "id",
-          },
-        },
-        sentimientos: {
-          type: DataTypes.STRING,
-        },
-        factor_psicosocial: {
-          type: DataTypes.STRING,
-        },
-        score: {
-          type: DataTypes.INTEGER,
-        },
-        keyword_frequency: {
-          type: DataTypes.TEXT,
-        },
-        message_length: {
-          type: DataTypes.INTEGER,
-        },
-        created_at: {
-          type: DataTypes.DATE,
-          allowNull: false,
-          defaultValue: DataTypes.NOW,
-        },
-      }, // attributes
-      {
-        sequelize,
-        timestamps: false,
-        tableName: "messages",
-      }
-    );
+@Table({
+  timestamps: false,
+  tableName: "messages",
+})
+export class Message extends Model {
+  @AllowNull(false)
+  @Column(DataType.TEXT)
+  content!: string;
 
-    return this;
-  }
+  @ForeignKey(() => User)
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  user_id!: number;
+
+  @BelongsTo(() => User)
+  user!: User;
+
+  @ForeignKey(() => User)
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  user_id_receptor!: number;
+
+  @BelongsTo(() => User)
+  user_receptor!: User;
+
+  @Column(DataType.STRING)
+  sentimientos!: string;
+
+  @Column(DataType.STRING)
+  factor_psicosocial!: string;
+
+  @Column(DataType.INTEGER)
+  score!: number;
+
+  @Column(DataType.TEXT)
+  keyword_frequency!: string;
+
+  @Column(DataType.INTEGER)
+  message_length!: number;
+
+  @CreatedAt
+  created_at!: Date;
 }
-
-export default Message;

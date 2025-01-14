@@ -1,23 +1,14 @@
-import { DataTypes, Model, Sequelize } from "sequelize";
+import { Column, DataType, Table, Model } from "sequelize-typescript";
 
-class Empresas extends Model {
-    static initModel(sequelize: Sequelize): typeof Empresas{
-        super.init(
-            {
-                nombre:{
-                    type: DataTypes.STRING
-                },
-                ruc:{
-                    type: DataTypes.STRING
-                },
-            },
-            {
-                sequelize,
-                timestamps: true,
-                tableName: "empresas"
-            }
-        );
-        return this;
-    }
+@Table({
+    timestamps: true,
+    tableName: "empresas"
+})
+export class Empresas extends Model {
+ 
+    @Column(DataType.STRING)
+    nombre!: string;
+
+    @Column(DataType.STRING)
+    ruc!: string;
 }
-export default Empresas;

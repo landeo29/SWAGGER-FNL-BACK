@@ -12,30 +12,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const sequelize_1 = require("sequelize");
+const sequelize_typescript_1 = require("sequelize-typescript");
 const models_1 = __importDefault(require("../models/models"));
 class Database {
     constructor() {
-        this.connection = new sequelize_1.Sequelize(process.env.DB_NAME || 'fnl', process.env.DB_USER || 'paul', process.env.DB_PASSWORD || 'paulp', {
-            host: process.env.DB_HOST || 'localhost',
-            dialect: process.env.DB_DIALECT || 'mysql',
-            port: parseInt(process.env.DB_PORT || '3306'),
-            retry: { max: 3 },
-        });
+        this.connection = null;
         this.init();
     }
     init() {
         try {
-            console.log('aqui llega');
-            Object.values(models_1.default).forEach((model) => {
-                if (typeof model.initModel === "function") {
-                    model.initModel(this.connection);
-                }
-            });
-            Object.values(models_1.default).forEach((model) => {
-                if (typeof model.associate === "function") {
-                    model.associate(models_1.default);
-                }
+            const name = process.env.DB_NAME || 'fnlprueba';
+            console.log(name);
+            const user = process.env.DB_USER || 'paul';
+            const password = process.env.DB_PASSWORD || 'paulp';
+            const host = process.env.DB_HOST || 'localhost';
+            const dialect = process.env.DB_DIALECT || 'mysql';
+            const port = parseInt(process.env.DB_PORT || '3306');
+            this.connection = new sequelize_typescript_1.Sequelize(name, user, password, {
+                host,
+                dialect,
+                port,
+                retry: { max: 3 },
+                models: models_1.default
             });
         }
         catch (error) {

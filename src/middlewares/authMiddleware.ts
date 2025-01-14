@@ -1,14 +1,9 @@
-import { Request, Response, NextFunction } from "express";
-const { default: rateLimit } = require("express-rate-limit");
 
-import jwt, { JwtPayload } from "jsonwebtoken";
-
-export interface RequestAuth extends Request {
-  user: JwtPayload | string;
-}
+import rateLimit from "express-rate-limit";
+import jwt from "jsonwebtoken";
 
 // Middleware para verificar el token JWT
-function verifyToken(req: RequestAuth, res: Response, next: NextFunction) {
+function verifyToken(req: any, res: any, next: any) {
   try {
     const authHeader = req.headers["authorization"];
 
@@ -55,7 +50,7 @@ const rateLimitOpenAi = rateLimit({
     status: 429,
     error: `Has superado el limite de ${limitRequestOpenAi} solicitudes por dia`,
   },
-  keyGenerator: (req: Request) => {
+  keyGenerator: (req: any) => {
     const token = req.headers["authorization"]?.split(" ")[1];
     if (!token) {
       throw new Error("No token provided, authorization denied");

@@ -1,23 +1,17 @@
-import { DataTypes, Model, Sequelize } from "sequelize";
+import {
+  AllowNull,
+  Column,
+  DataType,
+  Model,
+  Table,
+} from "sequelize-typescript";
 
-class AgeRange extends Model {
-  static initModel(sequelize: Sequelize): typeof AgeRange {
-    super.init(
-      {
-        age_range: {
-          type: DataTypes.STRING,
-          allowNull: false,
-        },
-      }, // attributes
-      {
-        sequelize,
-        timestamps: false,
-        tableName: "age_range",
-      }
-    );
-
-    return this;
-  }
+@Table({
+  timestamps: false,
+  tableName: "age_range",
+})
+export class AgeRange extends Model {
+  @AllowNull(false)
+  @Column(DataType.STRING)
+  age_range!: string;
 }
-
-export default AgeRange;
