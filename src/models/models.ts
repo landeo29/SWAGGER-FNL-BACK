@@ -1,7 +1,6 @@
 import { Message } from "./ChatBot/message";
 import { EstresNiveles } from "./Clasificacion/estres_niveles";
-import { EstresTecnicas } from "./Clasificacion/estrestecnicas";
-import { TipoTecnicas } from "./Clasificacion/tipotecnicas";
+//import { TipoTecnicas } from "./Clasificacion/tipotecnicas";
 import { UserEstresSession } from "./Clasificacion/userestressession";
 import { Empresas } from "./Global/empresas";
 import { UserPrograma } from "./Program/userprograma";
@@ -23,8 +22,6 @@ const models = [
   AgeRange,
   EstresNiveles,
   UserEstresSession,
-  TipoTecnicas,
-  EstresTecnicas,
   TestEstres,
   TestEstresSalida,
   Message,

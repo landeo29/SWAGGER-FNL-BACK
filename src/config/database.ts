@@ -42,7 +42,7 @@ class Database {
       console.log("Conexión a la base de datos establecida correctamente.");
 
       // Sincronizar los modelos con la base de datos
-      await this.connection?.sync({ alter: true });
+      await this.connection?.sync({ alter: false });
       console.log("Base de datos sincronizada correctamente.");
 
     } catch (err) {

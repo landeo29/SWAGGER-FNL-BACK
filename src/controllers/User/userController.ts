@@ -44,7 +44,7 @@ class UserController {
   }
 
   async createUser(req: any, res: any) {
-    const { username, password, email } = req.body;
+    const { username, password, email, empresa_id } = req.body;
     const file = req.file; // Ahora usamos req.file, ya que es un solo archivo
 
     try {
@@ -77,6 +77,7 @@ class UserController {
         email,
         profileImage: profileImagePath,
         created_at: new Date(),
+        empresa_id
       });
 
       res

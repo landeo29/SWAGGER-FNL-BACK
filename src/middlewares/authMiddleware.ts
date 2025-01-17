@@ -2,7 +2,7 @@
 import rateLimit from "express-rate-limit";
 import jwt from "jsonwebtoken";
 
-// Middleware para verificar el token JWT
+/*
 function verifyToken(req: any, res: any, next: any) {
   try {
     const authHeader = req.headers["authorization"];
@@ -18,9 +18,8 @@ function verifyToken(req: any, res: any, next: any) {
     if (!jwt_secret) {
       throw new Error("jwt secret unknow");
     }
-    // Verificar el token
     const decoded = jwt.verify(token, jwt_secret);
-    req.user = decoded; // decoded contiene los datos del usuario (por ejemplo, el userId)
+    req.user = decoded; 
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
@@ -38,6 +37,48 @@ function verifyToken(req: any, res: any, next: any) {
     res.status(500).json({
       message: "Internal server Error",
       error: error,
+    });
+  }
+}
+ */
+
+
+function Authorization(req: any, res: any, next: any) {
+  const authorization = req.headers.authorization;
+  if (!authorization) {
+    return res.status(401).json({
+      message: "No Authorization Header",
+    });
+  }
+  try {
+    const token = authorization.split(" ")[1];
+    console.log("token: ", token);
+    if (!token) {
+      return res.status(401).json({
+        message: "Invalid Token Format",
+      });
+    }
+    const secret = process.env.SECRET_KEY ?? '';
+    const decode = jwt.verify(token, secret);
+    req.userId = decode;
+    next();
+  } catch (error: any) {
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({
+        message: "Session Expired",
+        error: error.message,
+      });
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({
+        message: "Invalid Token",
+        error: error.message,
+      });
+    }
+    res.status(500).json({
+      message: "Internal server Error",
+      error: error.message,
+      stack: error.stack,
     });
   }
 }
@@ -66,6 +107,6 @@ const rateLimitOpenAi = rateLimit({
 });
 
 export {
-  verifyToken,
+  Authorization,
   rateLimitOpenAi,
 };

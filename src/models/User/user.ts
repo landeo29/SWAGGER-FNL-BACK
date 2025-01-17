@@ -9,10 +9,12 @@ import {
   IsEmail,
   CreatedAt,
   HasMany,
+  ForeignKey,
+  BelongsTo,
 } from "sequelize-typescript";
-import { EstresTecnicas } from "../Clasificacion/estrestecnicas";
 import { UserEstresSession } from "../Clasificacion/userestressession";
 import { UserResponses } from "./user_responses";
+import { Empresas } from "../Global/empresas";
 
 @Table({
   timestamps:false,
@@ -63,12 +65,17 @@ export class User extends Model {
   @CreatedAt
   createdAt!: Date;
 
-  @HasMany(() => EstresTecnicas)
-  estrestecnicas!: EstresTecnicas[];
-
   @HasMany(() => UserEstresSession)
   userestressessions!: UserEstresSession[];
 
   @HasMany(() => UserResponses)
   userresponses!: UserResponses[];
+
+  @ForeignKey(() => Empresas)
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  empresa_id!: Empresas;
+
+  @BelongsTo(() => Empresas)
+  empresa!: Empresas;
 }

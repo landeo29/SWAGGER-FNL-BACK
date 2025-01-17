@@ -20,7 +20,7 @@ const UserProgramaRouter = Router();
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.get('/userprograma', UserProgramaController.getAll);
+UserProgramaRouter.get('/', UserProgramaController.getAll);
 
 /**
  * Post track
@@ -42,29 +42,7 @@ UserProgramaRouter.get('/userprograma', UserProgramaController.getAll);
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.get('/userprograma/:id', UserProgramaController.getById);
-
-/**
- * Post track
- * @openapi
- * /userprograma:
- *    post:
- *      tags:
- *        - UserPrograma
- *      summary: "Crear un User Programa"
- *      description: Este endpoint para crear un nuevo User Programa
- *      requestBody:
- *          content:
- *            application/octet-stream:
- *              schema:
- *                $ref: "#/components/schemas/userPrograma"
- *      responses:
- *        '200':
- *          description: Retorna el nombre del nivel.
- *        '422':
- *          description: Error de validacion.
- */
-UserProgramaRouter.post('/userprograma', UserProgramaController.create);
+UserProgramaRouter.get('/:id', UserProgramaController.getById);
 
 /**
  * Post track
@@ -91,7 +69,7 @@ UserProgramaRouter.post('/userprograma', UserProgramaController.create);
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.put('/userprograma/:id', UserProgramaController.update);
+UserProgramaRouter.put('/:id', UserProgramaController.update);
 
 /**
  * Post track
@@ -113,7 +91,7 @@ UserProgramaRouter.put('/userprograma/:id', UserProgramaController.update);
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.delete('/userprograma/:id', UserProgramaController.delete);
+UserProgramaRouter.delete('/:id', UserProgramaController.delete);
 
 /**
  * Post track
@@ -135,7 +113,7 @@ UserProgramaRouter.delete('/userprograma/:id', UserProgramaController.delete);
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.get('/userprograma/user/:user_id', UserProgramaController.getByUserId);
+UserProgramaRouter.get('/user/:user_id', UserProgramaController.getByUserId);
 
 /**
  * Post track
@@ -157,7 +135,7 @@ UserProgramaRouter.get('/userprograma/user/:user_id', UserProgramaController.get
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.post('/userprograma/report/:user_id', UserProgramaController.createAndGenerateReport);
+UserProgramaRouter.post('/report/:user_id', UserProgramaController.createAndGenerateReport);
 
 /**
  * Post track
@@ -179,7 +157,7 @@ UserProgramaRouter.post('/userprograma/report/:user_id', UserProgramaController.
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.post('/userprograma/getprogramcompleto/:user_id', UserProgramaController.getByUserIdAndOrderByDia);
+UserProgramaRouter.post('/getprogramcompleto/:user_id', UserProgramaController.getByUserIdAndOrderByDia);
 
 /**
  * Post track
@@ -217,7 +195,7 @@ UserProgramaRouter.post('/userprograma/getprogramcompleto/:user_id', UserProgram
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.put('/userprograma/:user_id/:id', UserProgramaController.updateByUserAndTecnica);
+UserProgramaRouter.put('/:user_id/:id', UserProgramaController.updateByUserAndTecnica);
 
 
 export default UserProgramaRouter;

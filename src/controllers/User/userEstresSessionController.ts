@@ -27,7 +27,6 @@ class UserEstresSessionController{
 
     async assignEstresNivel(req: any, res: any){
         const { user_id, estres_nivel_id } = req.body;
-
     try {
         // Busca si ya existe una sesión de estrés para el usuario
         const existingSession = await UserEstresSession.findOne({ where: { user_id } });

@@ -98,41 +98,8 @@ const swaggerDefinition: OAS3Definition = {
           }
         }
       },
-      estresTecnica:{
-        type: "object",
-        properties:{
-          nombre:{
-            type:"string",
-            example:"nombre_ejemplo"
-          },
-          mensaje:{
-            type:"string",
-            example:"mensaje_ejemplo"
-          },
-          steps:{
-            type:"string",
-            example:"steps_ejemplo"
-          },
-          tipo:{
-            type:"string",
-            example:"tipo_ejemplo"
-          },
-          icon:{
-            type:"string",
-            example:"icon_ejemplo"
-          },
-          tipotecnicas_id:{
-            type: "int64",
-            example: 2
-          },
-        }
-      },
       userPrograma:{
         user_id:{
-          type: "int64",
-          example: 2
-        },
-        estrestecnicas_id:{
           type: "int64",
           example: 2
         },

@@ -1,36 +1,40 @@
 import { addDays } from "date-fns";
-import { EstresTecnicas } from "../../models/Clasificacion/estrestecnicas";
 import { UserEstresSession } from "../../models/Clasificacion/userestressession";
 import { UserPrograma } from "../../models/Program/userprograma";
 import { User } from "../../models/User/user";
 import { UserResponses } from "../../models/User/user_responses";
 import OpenaiController from "../ChatBot/OpenaiController";
+import { AgeRange } from "../../models/User/ageRange";
+import { ResponsabilityLevel } from "../../models/User/responsabilityLevel";
+import { Gender } from "../../models/User/gender";
+import { Hierarchical_level } from "../../models/User/hierarchical_level";
+import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
 
 class UserProgramaController {
   // Mapeo para los valores de estrés, rango de edad, nivel jerárquico, nivel de responsabilidad y género
-  private estresNivelMap: Record<number, string> = {
+  estresNivelMap: Record<number, string> = {
     1: "Leve",
     2: "Moderado",
     3: "Alto",
   };
-  private ageRangeMap: Record<number, string> = {
+  ageRangeMap: Record<number, string> = {
     1: "18-25",
     2: "26-35",
     3: "36-45",
     4: "46-60",
   };
-  private hierarchicalLevelMap: Record<number, string> = {
+  hierarchicalLevelMap: Record<number, string> = {
     1: "Gerente",
     2: "Supervisor",
     3: "Coordinador",
     4: "Analista",
   };
-  private responsabilityLevelMap: Record<number, string> = {
+  responsabilityLevelMap: Record<number, string> = {
     1: "Alto",
     2: "Medio",
     3: "Bajo",
   };
-  private genderMap: Record<number, string> = {
+  genderMap: Record<number, string> = {
     1: "Masculino",
     2: "Femenino",
     3: "Otro",
@@ -43,7 +47,7 @@ class UserProgramaController {
   };
 */
   // Mapeo para los valores de las respuestas
-  private respuestaMap: Record<number, string> = {
+  respuestaMap: Record<number, string> = {
     1: "Nunca",
     2: "Raras veces",
     3: "Ocasionalmente",
@@ -54,7 +58,7 @@ class UserProgramaController {
   };
 
   // Definiciones de las preguntas
-  private preguntasDefiniciones: Record<string, string> = {
+  preguntasDefiniciones: Record<string, string> = {
     pregunta_1:
       "Tener que hacer reportes tanto para sus jefes como para las personas de su equipo le preocupa, porque siente que debe cumplir con las expectativas de todos y eso le genera tensión.",
     pregunta_2:
@@ -115,9 +119,27 @@ class UserProgramaController {
       // Obtener datos del usuario, nivel de estrés y respuestas
       const estresSession = await UserEstresSession.findOne({
         where: { user_id },
-        attributes: ["estres_nivel_id"],
+        include:[
+          {
+            model: EstresNiveles
+          }
+        ]
       });
-      const userResponse = await UserResponses.findOne({ where: { user_id } });
+      const userResponse = await UserResponses.findOne({ where: { user_id }, include:[
+        {
+          model: AgeRange
+        },
+        {
+          model: Hierarchical_level
+        },
+        {
+          model: Gender
+        },
+        {
+          model: ResponsabilityLevel
+        }
+      ] });
+
       const user = await User.findOne({
         where: { id: user_id },
         attributes: ["username", "email"],
@@ -128,21 +150,21 @@ class UserProgramaController {
           error: "No se encontraron los datos requeridos del usuario.",
         });
       }
+      console.log("nivel de estress:",estresSession.estres_nivel.nombre);
+      console.log("rango de edad: ", userResponse.age_range.age_range);
+      console.log("jerarquia: ", userResponse.hierarchical_level.level);
+      console.log("nivel de responsabilidad: ", userResponse.responsability_level.level);
+      console.log("genero: ", userResponse.gender.gender);
+      const estres_nivel = estresSession.estres_nivel.nombre ?? "Desconocido";
+      const age_range = userResponse.age_range.age_range ?? "Desconocido";
+      const hierarchical_level = userResponse.hierarchical_level.level ?? "Desconocido";
+      const responsability_level = userResponse.responsability_level.level ?? "Desconocido";
+      const gender = userResponse.gender.gender || "Desconocido";
 
-      const estres_nivel =
-        this.estresNivelMap[estresSession.estres_nivel_id] || "Desconocido";
-      const age_range =
-        this.ageRangeMap[userResponse.age_range_id] || "Desconocido";
-      const hierarchical_level =
-        this.hierarchicalLevelMap[userResponse.hierarchical_level_id] ||
-        "Desconocido";
-      const responsability_level =
-        this.responsabilityLevelMap[userResponse.responsability_level_id] ||
-        "Desconocido";
-      const gender = this.genderMap[userResponse.gender_id] || "Desconocido";
-
+      console.log("data: ", data);
+      console.log(Object.keys(data).length)
       // Respuestas del usuario al test de estrés
-      const preguntasResueltas = Object.keys(data).map((pregunta, _index) => ({
+      const preguntasResueltas = Object.keys(data).map((pregunta) => ({
         pregunta: this.preguntasDefiniciones[pregunta],
         respuesta: this.respuestaMap[data[pregunta]] || "No especificado",
       }));
@@ -306,13 +328,6 @@ class UserProgramaController {
     try {
       const userProgramas = await UserPrograma.findAll({
         where: { user_id }, // Filtrar por user_id
-        include: [
-          {
-            model: EstresTecnicas, // Incluir la tabla relacionada 'EstresTecnicas'
-            as: "tecnica", // Alias para acceder a los datos de EstresTecnicas
-            attributes: ["id", "nombre", "mensaje", "steps", "tipo", "icon"], // Especificar los campos que quieres obtener
-          },
-        ],
       });
 
       if (userProgramas.length === 0) {
@@ -331,11 +346,11 @@ class UserProgramaController {
   }
 
   async updateByUserAndTecnica(req: any, res: any) {
-    const { user_id, id } = req.params; // Obtener user_id y estrestecnicas_id de los parámetros
+    const { user_id, id } = req.params; // Obtener user_id y ide de los parámetros
     const { comentario, estrellas } = req.body; // Obtener los campos que se quieren actualizar del body
 
     try {
-      // Buscar el registro basado en user_id y estrestecnicas_id
+      // Buscar el registro basado en user_id y
       const userPrograma = await UserPrograma.findOne({
         where: {
           user_id: user_id,
@@ -398,10 +413,7 @@ class UserProgramaController {
           .json({ error: "No se encontraron programas para este usuario" });
       }
 
-      // Si necesitas los datos de EstresTecnicas por separado, puedes hacer una consulta adicional
-      const estresTecnicas = await EstresTecnicas.findAll(); // Aquí se recuperan todas las técnicas, puedes agregar condiciones si es necesario
-
-      res.status(200).json({ userProgramas, estresTecnicas }); // Responder con los datos de ambas tablas
+      res.status(200).json({ userProgramas }); // Responder con los datos de ambas tablas
     } catch (error: any) {
       console.error("Error al obtener los programas de usuario:", error);
       res.status(500).json({
@@ -410,18 +422,10 @@ class UserProgramaController {
     }
   }
 
-  // Obtener todos los registros de UserPrograma junto con los detalles de EstresTecnicas
+  // Obtener todos los registros de UserPrograma 
   async getAll(_req: any, res: any) {
     try {
-      const userProgramas = await UserPrograma.findAll({
-        include: [
-          {
-            model: EstresTecnicas, // Incluir la tabla relacionada 'EstresTecnicas'
-            as: "tecnica", // Alias para acceder a los datos de EstresTecnicas
-            attributes: ["id", "nombre", "mensaje", "steps", "tipo", "icon"], // Especificar los campos que quieres obtener
-          },
-        ],
-      });
+      const userProgramas = await UserPrograma.findAll();
       res.status(200).json(userProgramas);
     } catch (error) {
       res
@@ -446,24 +450,9 @@ class UserProgramaController {
     }
   }
 
-  // Crear un nuevo registro en UserPrograma
-  async create(req: any, res: any) {
-    const { user_id, estrestecnicas_id, dia } = req.body;
-    try {
-      const newUserPrograma = await UserPrograma.create({
-        user_id,
-        estrestecnicas_id,
-        dia,
-      });
-      res.status(201).json(newUserPrograma);
-    } catch (error) {
-      res.status(500).json({ error: "Error al crear el programa de usuario" });
-    }
-  }
   // Actualizar un registro de UserPrograma por ID
   async update(req: any, res: any) {
     const { id } = req.params;
-    //const { user_id, estrestecnicas_id, dia } = req.body;
     const { user_id, dia } = req.body;
     try {
       const userPrograma = await UserPrograma.findByPk(id);
@@ -472,7 +461,6 @@ class UserProgramaController {
       }
 
       userPrograma.user_id = user_id || userPrograma.user_id;
-      //userPrograma.estrestecnicas_id = estrestecnicas_id || userPrograma.estrestecnicas_id;
       userPrograma.dia = dia || userPrograma.dia;
 
       await userPrograma.save();

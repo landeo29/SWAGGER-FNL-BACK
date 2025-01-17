@@ -7,9 +7,8 @@ import database from './config/database'
 async function main (): Promise<void> {
   try {
     const PORT = process.env.PORT ?? 3000
-
-    // Sincronización con la base de datos
-    // await database.sync();
+    //sincronizacion de base de datos
+    
     await database.sync()
     // Inicialización del servidor
     app.listen(PORT, () => {

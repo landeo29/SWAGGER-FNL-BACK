@@ -7,15 +7,13 @@ import swaggerSetup from "./config/swagger"
 import MessagesRoutes from "./routes/messages.routes";
 import UserRoutes from "./routes/user.routes";
 import OpenaiRoutes from "./routes/openai.routes";
-import ActivityRouter from "./routes/activity.routes";
 import MaintanceRoutes from "./routes/maintance.routes";
 import UserResponseRoutes from "./routes/userResponse.routes";
 import TestEstresRoutes from "./routes/testEstres.routes";
 import EstresNivelesRoutes from "./routes/estresNiveles.routes";
 import UserEstresSesionRoutes from "./routes/userestressesion.routes";
 import UserProgramaRouter from "./routes/userprograma.routes";
-import EstresTecnicasRoutes from "./routes/estresTecnicas.routes";
-import TipoTecnicasRoutes from "./routes/tipotecnicas.routes";
+//import TipoTecnicasRoutes from "./routes/tipotecnicas.routes";
 import TestEstresSalidaRoutes from "./routes/testEstresSalida.routes";
 class App {
   private server: Application;
@@ -41,19 +39,17 @@ class App {
   }
   private routes(): void {
     // Configuración de rutas
-    this.server.use("/api", MessagesRoutes);
     this.server.use("/api", UserRoutes);
-    this.server.use("/api", OpenaiRoutes);
-    this.server.use("/api", ActivityRouter);
     this.server.use("/api/v1/maintance", MaintanceRoutes);
-    this.server.use("/api", UserResponseRoutes);
     this.server.use("/api", TestEstresRoutes);
+    this.server.use("/api", MessagesRoutes);
+    this.server.use("/api", OpenaiRoutes);
     this.server.use("/api", EstresNivelesRoutes);
     this.server.use("/api", UserEstresSesionRoutes);
-    this.server.use("/api", UserProgramaRouter);
-    this.server.use("/api", EstresTecnicasRoutes);
-    this.server.use("/api", TipoTecnicasRoutes);
-    this.server.use("/api", TestEstresSalidaRoutes);
+    this.server.use("/api", UserResponseRoutes);
+    this.server.use("/api/userprograma", UserProgramaRouter);
+    this.server.use("/api", TestEstresSalidaRoutes); //cambiar ruta
+    //this.server.use("/api", TipoTecnicasRoutes);
   }
   public getServer(): Application {
     return this.server;
