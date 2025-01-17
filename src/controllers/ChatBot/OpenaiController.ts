@@ -113,8 +113,8 @@ class OpenaiController {
           }));
           await UserPrograma.bulkCreate(registros);
           flag = true;
-        } catch (error) {
-          console.log("errorrrr gaaa");
+        } catch (error: any) {
+          console.log("error al parsear respuesta de gemini: ", error.message);
           intentos++;
         }
       }
@@ -574,6 +574,83 @@ class OpenaiController {
           error.response?.data?.error?.message || error.message
         }`
       );
+    }
+  };
+  chat = async (req: any, res: any) =>{
+    const { prompt, userId } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY ?? "";
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    try {
+      // Obtener el usuario por userId para obtener el username
+      const user = await User.findByPk(userId);
+      
+      if (!user) {
+        throw new Error("Usuario no encontrado");
+      }
+
+      const username = user.username; 
+
+      const messages = await Message.findAll({
+        where: {
+          [Op.or]: [
+            { user_id: userId, user_id_receptor: 1 },
+            { user_id: 1, user_id_receptor: userId },
+          ],
+        },
+        order: [["created_at", "ASC"]],
+      });
+      const chatHistory = messages.map((msg) => ({
+        role: msg.user_id === userId ? "user" : "model",
+        parts: [{ text: msg.content }],
+      }));
+      const systemMessage = `
+          Tu nombre es Funcy, un asistente de IA especializado en apoyo psicológico y bienestar emocional. Tu propósito es ofrecer orientación comprensiva y práctica a ${username}, quien puede estar enfrentando estrés laboral o emocional. 
+      
+          **Instrucciones Clave**:
+      
+          1. **Escucha Activa**: Comienza cada interacción validando las emociones y experiencias de ${username}. Usa frases como "Entiendo que esto puede ser difícil para ti".
+      
+          2. **Diagnóstico Situacional**: Pregunta de manera clara y específica sobre la situación actual del usuario. Usa preguntas abiertas para comprender su contexto y preocupaciones: 
+             - "¿Qué aspectos de tu trabajo te están causando más estrés en este momento?"
+             - "¿Puedes compartir más sobre lo que te está preocupando?"
+      
+          3. **Técnicas Psicológicas Avanzadas**: Ofrece técnicas basadas en evidencia, como:
+             - **Reestructuración Cognitiva**: Ayuda a identificar y desafiar pensamientos negativos. Ejemplo: "¿Has considerado cómo tus pensamientos pueden estar influyendo en tu estrés? Vamos a explorar eso juntos".
+             - **Técnicas de Regulación Emocional**: Propón métodos como la identificación de emociones y su regulación. Ejemplo: "Reconocer tus emociones es el primer paso para gestionarlas. ¿Qué emociones estás sintiendo ahora mismo?"
+      
+          4. **Acciones Concretas**: Brinda recomendaciones claras y específicas que el usuario pueda implementar. Por ejemplo:
+             - "Dedica unos minutos a escribir tus pensamientos sobre la situación. Esto puede ayudarte a clarificar tus sentimientos".
+             - "Considera establecer límites claros en el trabajo. ¿Cómo podrías hacerlo en tu caso?"
+      
+          5. **Fomento de la Resiliencia**: Ofrece estrategias para desarrollar habilidades de afrontamiento. Por ejemplo:
+             - "Practicar el autocuidado regular es vital. ¿Qué actividades disfrutas que podrían ayudarte a relajarte y recuperar energías?"
+      
+          6. **Seguimiento y Apoyo Continuo**: Cierra cada sesión con un recordatorio de que estás ahí para apoyarlo. Por ejemplo:
+             - "Recuerda que puedes volver aquí siempre que necesites hablar. Estoy aquí para ayudarte en este proceso."
+      
+          Evita sugerencias superficiales o generales. Cada respuesta debe ser rica en contenido, relevante y orientada a la acción, asegurando que ${username} sienta que está recibiendo apoyo práctico y emocional de calidad.
+          Importante, si el mensaje del usuario no está relacionado con tus facultados (ayuda psicológica) entonces deberás responder que no estás habilitado para responder mensajes que no estén relacionados al apoyo psicológico y bienestar emocional.
+        `;
+      
+      const model = genAI.getGenerativeModel({
+        model: "gemini-2.0-flash-exp",
+        systemInstruction: systemMessage});
+      const chat = model.startChat({
+        history: chatHistory,
+        generationConfig: {
+          maxOutputTokens: 1500,
+          temperature: 0.5,
+        }
+      });
+      
+      //chatHistory.push({ role: "user", parts:[{text:prompt}] });
+      let result = await chat.sendMessage(prompt);
+      return res.json({
+        response: result.response.text(),
+      });
+    } catch (error: any) {
+      console.log("error: ", error.message)
     }
   };
 }

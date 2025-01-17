@@ -27,6 +27,6 @@ const OpenaiRoutes = Router();
  *        '422':
  *          description: Error de validacion.
  */
-OpenaiRoutes.post("/ask", OpenaiController.getBotResponse);
-
+OpenaiRoutes.post("/ask", OpenaiController.chat);
+//OpenaiRoutes.post("/ask", OpenaiController.getBotResponse);
 export default OpenaiRoutes;
