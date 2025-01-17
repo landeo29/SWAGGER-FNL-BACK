@@ -2,12 +2,385 @@ import { Op } from "sequelize";
 import { Message } from "../../models/ChatBot/message";
 import { User } from "../../models/User/user";
 import axios from "axios";
+import { UserPrograma } from "../../models/Program/userprograma";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 class OpenaiController {
   countTokens(text: string) {
     return text.split(" ").length;
   }
-  async getBotResponse(req: any, res: any) {
+  generateProgramsWithGemini = async (
+    username: string,
+    age_range: string,
+    hierarchical_level: string,
+    responsability_level: string,
+    gender: string,
+    estres_nivel: string,
+    resumenRespuestas: string
+  ) => {
+    const apiKey = process.env.GEMINI_API_KEY ?? '';
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const prompt =`
+        Deberás tener encuenta la siguiente información, te servirá:
+        Datos del usuario:
+          - Nombre: ${username}
+          - Edad: ${age_range}
+          - Nivel jerárquico: ${hierarchical_level}
+          - Nivel de responsabilidad: ${responsability_level}
+          - Género: ${gender}
+          - Nivel de estrés: ${estres_nivel}
+    
+          Respuestas al test de estrés:
+          ${resumenRespuestas}
+          Genera un programa personalizado para los días 1 a 3 (Técnicas de Relajación).
+          Este programa debe:
+          - Ser gradual y compatible con las actividades cotidianas del usuario.
+          - Contener técnicas realizables sin necesidad de elementos externos.
+          - Incluir un mínimo de 15 pasos detallados y fáciles de seguir por técnica.
+    
+          Responde en formato JSON estrictamente válido:
+          [
+            {
+              "día": (número del día, tipo int),
+              "nombre_técnica": "Nombre de la técnica",
+              "tipo_técnica": "Subtítulo breve de la técnica",
+              "descripción": "Inicia motivando al usuario por su nombre y explica regularmente la técnica.",
+              "guía": ["Paso 1: Descripción del paso...", "Paso 2: Descripción del paso...", ..., "Paso 15: Descripción del paso..."]
+            }
+          ]
+    
+          Nota: Solo responde con el JSON válido.
+        `
+    const result = await model.generateContent(prompt);
+    console.log(result.response.text());
+  }
+  generatePrograms = async (
+    user_id: number,
+    username: string,
+    age_range: string,
+    hierarchical_level: string,
+    responsability_level: string,
+    gender: string,
+    estres_nivel: string,
+    resumenRespuestas: string
+  ) => {
+    const apiKey = process.env.OPENAI_API_KEY;
+    const url = "https://api.openai.com/v1/chat/completions";
+  
+    // Dividir prompts en tres partes
+    const prompts = [
+      {
+        seccion: "Días 1-3",
+        tipo: "Técnicas de relajación",
+        prompt: `
+          Genera un programa personalizado para los días 1 a 3 (Técnicas de Relajación).
+          Este programa debe:
+          - Ser gradual y compatible con las actividades cotidianas del usuario.
+          - Contener técnicas realizables sin necesidad de elementos externos.
+          - Incluir un mínimo de 15 pasos detallados y fáciles de seguir por técnica.
+    
+          Responde en formato JSON estrictamente válido:
+          [
+            {
+              "día": (número del día, tipo int),
+              "nombre_técnica": "Nombre de la técnica",
+              "tipo_técnica": "Subtítulo breve de la técnica",
+              "descripción": "Inicia motivando al usuario por su nombre y explica regularmente la técnica.",
+              "guía": ["Paso 1: Descripción del paso...", "Paso 2: Descripción del paso...", ..., "Paso 15: Descripción del paso..."]
+            }
+          ]
+    
+          Nota: Solo responde con el JSON válido.
+        `,
+      },
+      {
+        seccion: "Días 4-6",
+        tipo: "Técnicas de relajación",
+        prompt: `
+          Genera un programa personalizado para los días 4 a 6 (Técnicas de relajación).
+          Este programa debe:
+          - Ser gradual y compatible con las actividades cotidianas del usuario.
+          - Contener técnicas realizables sin necesidad de elementos externos.
+          - Incluir un mínimo de 15 pasos detallados y fáciles de seguir por técnica.
+    
+          Responde en formato JSON estrictamente válido:
+          [
+            {
+              "día": (número del día, tipo int),
+              "nombre_técnica": "Nombre de la técnica",
+              "tipo_técnica": "Subtítulo breve de la técnica",
+              "descripción": "Inicia motivando al usuario por su nombre y explica regularmente la técnica.",
+              "guía": ["Paso 1: Descripción del paso...", "Paso 2: Descripción del paso...", ..., "Paso 15: Descripción del paso..."]
+            }
+          ]
+    
+          Nota: Solo responde con el JSON válido.
+        `,
+      },
+      {
+        seccion: "Días 7-9",
+        tipo: "Reestructuación Cognitiva",
+        prompt: `
+          Genera un programa personalizado para los días 7 a 9 (Técnica de Reestructuación Cognitiva).
+          Este programa debe:
+          - Ser gradual y compatible con las actividades cotidianas del usuario.
+          - Contener técnicas realizables sin necesidad de elementos externos.
+          - Incluir un mínimo de 15 pasos detallados y fáciles de seguir por técnica.
+    
+          Responde en formato JSON estrictamente válido:
+          [
+            {
+              "día": (número del día, tipo int),
+              "nombre_técnica": "Nombre de la técnica",
+              "tipo_técnica": "Subtítulo breve de la técnica",
+              "descripción": "Inicia motivando al usuario por su nombre y explica regularmente la técnica.",
+              "guía": ["Paso 1: Descripción del paso...", "Paso 2: Descripción del paso...", ..., "Paso 15: Descripción del paso..."]
+            }
+          ]
+  
+          Nota: Solo responde con el JSON válido.
+        `,
+      },
+      {
+        seccion: "Días 10-12",
+        tipo: "Reestructuación Cognitiva",
+        prompt: `
+            Genera un programa personalizado para los días 10 a 12 (Técnica de Reestructuación Cognitiva).
+            Este programa debe:
+            - Ser gradual y compatible con las actividades cotidianas del usuario.
+            - Contener técnicas realizables sin necesidad de elementos externos.
+            - Incluir un mínimo de 15 pasos detallados y fáciles de seguir por técnica.
+      
+            Responde en formato JSON estrictamente válido:
+            [
+              {
+                "día": (número del día, tipo int),
+                "nombre_técnica": "Nombre de la técnica",
+                "tipo_técnica": "Subtítulo breve de la técnica",
+                "descripción": "Inicia motivando al usuario por su nombre y explica regularmente la técnica.",
+                "guía": ["Paso 1: Descripción del paso...", "Paso 2: Descripción del paso...", ..., "Paso 15: Descripción del paso..."]
+              }
+            ]
+    
+            Nota: Solo responde con el JSON válido.
+          `,
+      },
+      {
+        seccion: "Días 13-15",
+        tipo: "Reestructuación Cognitiva",
+        prompt: `
+            Genera un programa personalizado para los días 13 a 15 (Técnica de Reestructuación Cognitiva).
+            Este programa debe:
+            - Ser gradual y compatible con las actividades cotidianas del usuario.
+            - Contener técnicas realizables sin necesidad de elementos externos.
+            - Incluir un mínimo de 15 pasos detallados y fáciles de seguir por técnica.
+      
+            Responde en formato JSON estrictamente válido:
+            [
+              {
+                "día": (número del día, tipo int),
+                "nombre_técnica": "Nombre de la técnica",
+                "tipo_técnica": "Subtítulo breve de la técnica",
+                "descripción": "Inicia motivando al usuario por su nombre y explica regularmente la técnica.",
+                "guía": ["Paso 1: Descripción del paso...", "Paso 2: Descripción del paso...", ..., "Paso 15: Descripción del paso..."]
+              }
+            ]
+    
+            Nota: Solo responde con el JSON válido.
+          `,
+      },
+      {
+        seccion: "Días 16-18",
+        tipo: "Técnicas de PNL",
+        prompt: `
+            Genera un programa personalizado para los días 16 a 18 (Técnicas de PNL).
+            Este programa debe:
+            - Ser gradual y compatible con las actividades cotidianas del usuario.
+            - Contener técnicas realizables sin necesidad de elementos externos.
+            - Incluir un mínimo de 15 pasos detallados y fáciles de seguir por técnica.
+      
+            Responde en formato JSON estrictamente válido:
+            [
+              {
+                "día": (número del día, tipo int),
+                "nombre_técnica": "Nombre de la técnica",
+                "tipo_técnica": "Subtítulo breve de la técnica",
+                "descripción": "Inicia motivando al usuario por su nombre y explica regularmente la técnica.",
+                "guía": ["Paso 1: Descripción del paso...", "Paso 2: Descripción del paso...", ..., "Paso 15: Descripción del paso..."]
+              }
+            ]
+    
+            Nota: Solo responde con el JSON válido.
+          `,
+      },
+      {
+        seccion: "Días 19-21",
+        tipo: "Técnicas de PNL",
+        prompt: `
+            Genera un programa personalizado para los días 19 a 21 (Técnicas de PNL).
+            Este programa debe:
+            - Ser gradual y compatible con las actividades cotidianas del usuario.
+            - Contener técnicas realizables sin necesidad de elementos externos.
+            - Incluir un mínimo de 15 pasos detallados y fáciles de seguir por técnica.
+      
+            Responde en formato JSON estrictamente válido:
+            [
+              {
+                "día": (número del día, tipo int),
+                "nombre_técnica": "Nombre de la técnica",
+                "tipo_técnica": "Subtítulo breve de la técnica",
+                "descripción": "Inicia motivando al usuario por su nombre y explica regularmente la técnica.",
+                "guía": ["Paso 1: Descripción del paso...", "Paso 2: Descripción del paso...", ..., "Paso 15: Descripción del paso..."]
+              }
+            ]
+    
+            Nota: Solo responde con el JSON válido.
+          `,
+      },
+    ];
+  
+    for (const { seccion, prompt } of prompts) {
+      let structuredPrompt = {
+        role: "user",
+        content: prompt,
+      };
+  
+      let systemContext = {
+        role: "system",
+        content: `
+        Para cada solicitud deberás tener encuenta la siguiente información, te servirá:
+        
+        Datos del usuario:
+          - Nombre: ${username}
+          - Edad: ${age_range}
+          - Nivel jerárquico: ${hierarchical_level}
+          - Nivel de responsabilidad: ${responsability_level}
+          - Género: ${gender}
+          - Nivel de estrés: ${estres_nivel}
+    
+          Respuestas al test de estrés:
+          ${resumenRespuestas}
+        
+        `,
+      };
+  
+      let gptResponse = await axios.post(
+        url,
+        {
+          model: "gpt-4",
+          messages: [systemContext, structuredPrompt],
+          temperature: 0.2, // Respuestas más coherentes y precisas
+          top_p: 1.0,
+          frequency_penalty: 0.0,
+          presence_penalty: 0.0,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+        }
+      );
+      const gptResponsedata = gptResponse.data.choices[0].message.content.trim();
+      console.debug(`Respuesta de GPT para ${seccion}:`, gptResponsedata);
+      // Validar y parsear JSON
+      try {
+        //Intentaremos subir la data tan pronto la tengamos lista.
+        // programas.push(...JSON.parse(gptResponse));
+  
+        let resultGroup = JSON.parse(gptResponsedata);
+  
+        const registros = resultGroup.map((item: any) => ({
+          user_id: user_id,
+          dia: item.día,
+          nombre_tecnica: item.nombre_técnica,
+          tipo_tecnica: item.tipo_técnica,
+          descripcion: item.descripción,
+          guia: JSON.stringify(item.guía),
+          start_date: item.día === 1 ? new Date() : null,
+          completed_date: null,
+          comentario: item.comentario || null,
+          estrellas: item.estrellas || 3,
+        }));
+  
+        // Insertar registros en la base de datos
+        await UserPrograma.bulkCreate(registros);
+      } catch (error) {
+        console.error(`Error al parsear JSON para ${seccion}:`, error);
+      }
+    }
+  };
+  analyzeMessage = async (mensaje: any) => {
+    const apiKey = process.env.OPENAI_API_KEY;
+    const url = "https://api.openai.com/v1/chat/completions";
+  
+    const systemMessage = {
+      role: "system",
+      content: `
+    Analiza el siguiente mensaje, de parte de los usuarios de nuestra app para ayuda psicológica en el trabajo:
+    Responde en formato JSON estrictamente válido:
+      {
+        "sentimiento": "Positivo" (El mensaje tiene un tono optimista o alegre) o "Negativo" (El mensaje tiene un tono triste, enojado o preocupado) o "Neutral"(El mensaje no refleja emociones claras),
+        "factor_psicosocial": "Relación interpersonal" (e.g., problemas con jefe o compañeros) o "Estrés laboral" (e.g., carga laboral, falta de tiempo) o "Salud emocional" (e.g., sentirse triste, desmotivado) o "Ninguno" (si el mensaje no menciona ningún factor específico),
+      }
+    `,
+    };
+  
+    const message = {
+      role: "user",
+      content: mensaje,
+    };
+  
+    try {
+      const response = await axios.post(
+        url,
+        {
+          model: "gpt-4",
+          messages: [systemMessage, message],
+          temperature: 0.2, // Respuestas más coherentes y precisas
+          top_p: 1.0,
+          frequency_penalty: 0.0,
+          presence_penalty: 0.0,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+        }
+      );
+  
+      const rpta = JSON.parse(response.data.choices[0].message.content.trim());
+  
+      switch (rpta["sentimiento"]) {
+        case "Negativo":
+          rpta["score"] = -1;
+          break;
+        case "Positivo":
+          rpta["score"] = 1;
+          break;
+        default: //Neutral
+          rpta["score"] = 0;
+          break;
+      }
+  
+      rpta["message_length"] = mensaje.length;
+  
+      return rpta;
+    } catch (error: any) {
+      console.error(
+        "Error al obtener respuesta del bot:",
+        error.response?.data || error.message
+      );
+      throw new Error(
+        `Error al obtener respuesta del bot: ${
+          error.response?.data?.error?.message || error.message
+        }`
+      );
+    }
+  };
+  getBotResponse = async (req: any, res: any) => {
     const { prompt, userId } = req.body;
     const apiKey = process.env.OPENAI_API_KEY;
     const url = "https://api.openai.com/v1/chat/completions";
@@ -101,7 +474,7 @@ class OpenaiController {
 
       // Mensaje de éxito para la lectura del historial
       console.log("Historial leído correctamente:", limitedChatHistory);
-
+      
       // Enviar todo el historial limitado y el mensaje del sistema en una sola solicitud
       const response = await axios.post(
         url,
@@ -137,5 +510,7 @@ class OpenaiController {
       );
     }
   }
+
+
 }
 export default new OpenaiController();

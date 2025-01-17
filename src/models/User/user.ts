@@ -8,9 +8,9 @@ import {
   Default,
   IsEmail,
   CreatedAt,
-  HasMany,
   ForeignKey,
   BelongsTo,
+  HasOne,
 } from "sequelize-typescript";
 import { UserEstresSession } from "../Clasificacion/userestressession";
 import { UserResponses } from "./user_responses";
@@ -65,11 +65,11 @@ export class User extends Model {
   @CreatedAt
   createdAt!: Date;
 
-  @HasMany(() => UserEstresSession)
-  userestressessions!: UserEstresSession[];
+  @HasOne(() => UserEstresSession)
+  userestressessions!: UserEstresSession;
 
-  @HasMany(() => UserResponses)
-  userresponses!: UserResponses[];
+  @HasOne(() => UserResponses)
+  userresponses!: UserResponses;
 
   @ForeignKey(() => Empresas)
   @AllowNull(true)

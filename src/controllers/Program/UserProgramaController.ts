@@ -11,43 +11,10 @@ import { Hierarchical_level } from "../../models/User/hierarchical_level";
 import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
 
 class UserProgramaController {
-  // Mapeo para los valores de estrés, rango de edad, nivel jerárquico, nivel de responsabilidad y género
-  estresNivelMap: Record<number, string> = {
-    1: "Leve",
-    2: "Moderado",
-    3: "Alto",
-  };
-  ageRangeMap: Record<number, string> = {
-    1: "18-25",
-    2: "26-35",
-    3: "36-45",
-    4: "46-60",
-  };
-  hierarchicalLevelMap: Record<number, string> = {
-    1: "Gerente",
-    2: "Supervisor",
-    3: "Coordinador",
-    4: "Analista",
-  };
-  responsabilityLevelMap: Record<number, string> = {
-    1: "Alto",
-    2: "Medio",
-    3: "Bajo",
-  };
-  genderMap: Record<number, string> = {
-    1: "Masculino",
-    2: "Femenino",
-    3: "Otro",
-  };
-  /*
-  private tecnicaTipoMap: Record<number, string> = {
-    1: "Técnica de Relajación",
-    2: "Reestructuración Cognitiva",
-    3: "PNL",
-  };
-*/
-  // Mapeo para los valores de las respuestas
-  respuestaMap: Record<number, string> = {
+  respuestaMap: Record<string,string>;
+  preguntasDefiniciones: Record<string,string>;
+  constructor(){
+  this.respuestaMap = {
     1: "Nunca",
     2: "Raras veces",
     3: "Ocasionalmente",
@@ -56,9 +23,7 @@ class UserProgramaController {
     6: "Generalmente",
     7: "Siempre",
   };
-
-  // Definiciones de las preguntas
-  preguntasDefiniciones: Record<string, string> = {
+  this.preguntasDefiniciones = {
     pregunta_1:
       "Tener que hacer reportes tanto para sus jefes como para las personas de su equipo le preocupa, porque siente que debe cumplir con las expectativas de todos y eso le genera tensión.",
     pregunta_2:
@@ -106,8 +71,10 @@ class UserProgramaController {
     pregunta_23:
       "La falta de tecnología adecuada para realizar un trabajo de calidad le genera una gran presión y estrés.",
   };
+  }
 
-  async createAndGenerateReport(req: any, res: any) {
+
+  createAndGenerateReport = async (req: any, res: any) => {
     const { user_id } = req.params; // Obtener el user_id de los parámetros de la URL
     let data = req.body; // Obtener el map pasado en el cuerpo de la solicitud
 
@@ -117,212 +84,86 @@ class UserProgramaController {
 
     try {
       // Obtener datos del usuario, nivel de estrés y respuestas
-      const estresSession = await UserEstresSession.findOne({
-        where: { user_id },
-        include:[
-          {
-            model: EstresNiveles
-          }
-        ]
-      });
-      const userResponse = await UserResponses.findOne({ where: { user_id }, include:[
-        {
-          model: AgeRange
-        },
-        {
-          model: Hierarchical_level
-        },
-        {
-          model: Gender
-        },
-        {
-          model: ResponsabilityLevel
-        }
-      ] });
-
       const user = await User.findOne({
         where: { id: user_id },
         attributes: ["username", "email"],
+        include:[
+          {
+            model: UserResponses,
+            include:[
+              {
+                model: AgeRange
+              },
+              {
+                model: Hierarchical_level
+              },
+              {
+                model: Gender
+              },
+              {
+                model: ResponsabilityLevel
+              }
+            ]
+          },
+          {
+            model: UserEstresSession,
+            include:[
+              {
+                model: EstresNiveles
+              }
+            ]
+          }
+        ]
       });
-
-      if (!estresSession || !userResponse || !user) {
+      
+      if (!user) {
         return res.status(404).json({
           error: "No se encontraron los datos requeridos del usuario.",
         });
       }
-      console.log("nivel de estress:",estresSession.estres_nivel.nombre);
-      console.log("rango de edad: ", userResponse.age_range.age_range);
-      console.log("jerarquia: ", userResponse.hierarchical_level.level);
-      console.log("nivel de responsabilidad: ", userResponse.responsability_level.level);
-      console.log("genero: ", userResponse.gender.gender);
-      const estres_nivel = estresSession.estres_nivel.nombre ?? "Desconocido";
-      const age_range = userResponse.age_range.age_range ?? "Desconocido";
-      const hierarchical_level = userResponse.hierarchical_level.level ?? "Desconocido";
-      const responsability_level = userResponse.responsability_level.level ?? "Desconocido";
-      const gender = userResponse.gender.gender || "Desconocido";
+      const estres_nivel = user?.userestressessions.estres_nivel.nombre ?? "Desconocido";
+      const age_range = user?.userresponses.age_range.age_range ?? "Desconocido";
+      const hierarchical_level = user?.userresponses.hierarchical_level.level ?? "Desconocido";
+      const responsability_level = user?.userresponses.responsability_level.level ?? "Desconocido";
+      const gender = user?.userresponses.gender.gender || "Desconocido";
 
-      console.log("data: ", data);
-      console.log(Object.keys(data).length)
-      // Respuestas del usuario al test de estrés
-      const preguntasResueltas = Object.keys(data).map((pregunta) => ({
-        pregunta: this.preguntasDefiniciones[pregunta],
-        respuesta: this.respuestaMap[data[pregunta]] || "No especificado",
-      }));
-
-      // Generar un resumen de las respuestas del usuario para incluir en el prompt
-      const resumenRespuestas = preguntasResueltas
-        .map((p, index) => {
-          return `Pregunta ${index + 1}: ${p.pregunta} - Respuesta: ${
-            p.respuesta
-          }`;
-        })
-        .join("\n");
-
-      // Dividir prompts en tres partes
-      const prompts = [
-        {
-          seccion: "Días 1-7",
-          tipo: "Técnicas de relajación",
-          prompt: `
-            Genera un programa personalizado para los días 1 a 7 (Técnicas de Relajación).
-            Este programa debe ser gradual, permitiendo al usuario realizar las técnicas junto a sus actividades cotidianas.
-            Responde en formato JSON estrictamente válido:
-            [
-              {
-                "día": (número del día, tipo int),
-                "nombre_técnica": "Nombre de la técnica",
-                "tipo_técnica": "Subtitulo breve de la tecnica",
-                "descripción": "Inicia motivando al usuario por su nombre y explica regularmente la técnica.",
-                "guía": ["Paso 1...", "Paso 2...", "Paso n..."]
-              }
-            ]
-            **Datos del usuario:**
-            - Nombre: ${user.username}
-            - Edad: ${age_range}
-            - Nivel jerárquico: ${hierarchical_level}
-            - Nivel de responsabilidad: ${responsability_level}
-            - Género: ${gender}
-            - Nivel de estrés: ${estres_nivel}
-  
-            **Respuestas al test de estrés:**
-            ${resumenRespuestas}
-  
-            **Nota:** Solo responde con el JSON válido.
-          `,
-        },
-        {
-          seccion: "Días 8-14",
-          tipo: "Reestructuración cognitiva",
-          prompt: `
-            Genera un programa personalizado para los días 8 a 14 (Reestructuración Cognitiva). 
-            Este programa debe ser gradual, permitiendo al usuario realizar las técnicas junto a sus actividades cotidianas.
-            Responde en formato JSON estrictamente válido:
-            [
-              {
-                "día": (número del día, tipo int),
-                "nombre_técnica": "Nombre de la técnica",
-                "tipo_técnica": "Subtitulo breve de la tecnica",
-                "descripción": "Inicia motivando al usuario por su nombre y explica regularmente la técnica.",
-                "guía": ["Paso 1...", "Paso 2...", "Paso n..."]
-              }
-            ]
-            **Datos del usuario:**
-            - Nombre: ${user.username}
-            - Edad: ${age_range}
-            - Nivel jerárquico: ${hierarchical_level}
-            - Nivel de responsabilidad: ${responsability_level}
-            - Género: ${gender}
-            - Nivel de estrés: ${estres_nivel}
-  
-            **Respuestas al test de estrés:**
-            ${resumenRespuestas}
-  
-            **Nota:** Solo responde con el JSON válido.
-          `,
-        },
-        {
-          seccion: "Días 15-21",
-          tipo: "Técnicas de PNL",
-          prompt: `
-            Genera un programa personalizado para los días 15 a 21 (Técnicas de PNL). 
-            Este programa debe ser gradual, permitiendo al usuario realizar las técnicas junto a sus actividades cotidianas.
-            Responde en formato JSON estrictamente válido:
-            [
-              {
-                "día": (número del día, tipo int),
-                "nombre_técnica": "Nombre de la técnica",
-                "tipo_técnica": "Subtitulo breve de la tecnica",
-                "descripción": "Inicia motivando al usuario por su nombre y explica regularmente la técnica.",
-                "guía": ["Paso 1...", "Paso 2...", "Paso n..."]
-              }
-            ]
-            **Datos del usuario:**
-            - Nombre: ${user.username}
-            - Edad: ${age_range}
-            - Nivel jerárquico: ${hierarchical_level}
-            - Nivel de responsabilidad: ${responsability_level}
-            - Género: ${gender}
-            - Nivel de estrés: ${estres_nivel}
-  
-            **Respuestas al test de estrés:**
-            ${resumenRespuestas}
-  
-            **Nota:** Solo responde con el JSON válido.
-          `,
-        },
-      ];
-
-      // Generar respuestas de GPT para cada sección
-      const programas = [];
-      for (const { seccion, prompt } of prompts) {
-        const gptResponse = await OpenaiController.getBotResponse(
-          prompt,
-          user_id
-        );
-        console.log(`Respuesta de GPT para ${seccion}:`, gptResponse);
-
-        // Validar y parsear JSON
-        try {
-          programas.push(...JSON.parse(gptResponse));
-        } catch (error) {
-          console.error(`Error al parsear JSON para ${seccion}:`, error);
-          return res
-            .status(500)
-            .json({ error: `Error al procesar JSON para ${seccion}` });
-        }
-      }
-
-      // Preparar los registros para insertar en la base de datos
-      const currentDate = new Date(); // Fecha actual
-      const registros = programas.map((item) => ({
-        user_id: user_id,
-        dia: item.día,
-        nombre_tecnica: item.nombre_técnica,
-        tipo_tecnica: item.tipo_técnica,
-        descripcion: item.descripción,
-        guia: JSON.stringify(item.guía),
-        start_date: item.día === 1 ? currentDate : null,
-        completed_date: null,
-        comentario: item.comentario || null,
-        estrellas: item.estrellas || 3,
-      }));
-
-      // Insertar registros en la base de datos
-      await UserPrograma.bulkCreate(registros);
+      const respuesta = this.generarTextorespuestas(data)
+      
+      await OpenaiController.generatePrograms(user_id,
+        user.username,
+        age_range,
+        hierarchical_level,
+        responsability_level,
+        gender,
+        estres_nivel,
+        respuesta )
       console.log(
         "Registros insertados correctamente en la tabla UserPrograma"
       );
-
       res.status(200).json({
         message: "Programa generado correctamente.",
-        programas,
       });
     } catch (error) {
       console.error("Error al generar el programa del usuario:", error);
       res.status(500).json({ error: "Error interno del servidor." });
     }
   }
+  generarTextorespuestas = (respuestas: Record<string, string>) => {
+    let textoFinal = "";
 
+    // Iterar sobre las claves del objeto respuestas
+    for (const key in respuestas) {
+      if (respuestas.hasOwnProperty(key)) {
+        const pregunta = this.preguntasDefiniciones[key];
+        const respuesta = this.respuestaMap[respuestas[key]];
+
+        // Concatenar la pregunta y la respuesta
+        textoFinal += `Pregunta: ${pregunta} - Respuesta: ${respuesta}\n`;
+      }
+    }
+
+    return textoFinal;
+  }
   async getByUserId(req: any, res: any) {
     const { user_id } = req.params; // Obtener el user_id de los parámetros
     try {
@@ -490,4 +331,4 @@ class UserProgramaController {
     }
   }
 }
-export default new UserProgramaController();
+export default UserProgramaController;

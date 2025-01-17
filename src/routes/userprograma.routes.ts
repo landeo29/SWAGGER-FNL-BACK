@@ -2,7 +2,7 @@ import { Router } from "express";
 import UserProgramaController from "../controllers/Program/UserProgramaController";
 
 const UserProgramaRouter = Router();
-
+const userprogramacontroller = new UserProgramaController()
 // CRUD routes
 
 /**
@@ -20,7 +20,7 @@ const UserProgramaRouter = Router();
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.get('/', UserProgramaController.getAll);
+UserProgramaRouter.get('/', userprogramacontroller.getAll);
 
 /**
  * Post track
@@ -42,7 +42,7 @@ UserProgramaRouter.get('/', UserProgramaController.getAll);
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.get('/:id', UserProgramaController.getById);
+UserProgramaRouter.get('/:id', userprogramacontroller.getById);
 
 /**
  * Post track
@@ -69,7 +69,7 @@ UserProgramaRouter.get('/:id', UserProgramaController.getById);
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.put('/:id', UserProgramaController.update);
+UserProgramaRouter.put('/:id', userprogramacontroller.update);
 
 /**
  * Post track
@@ -91,7 +91,7 @@ UserProgramaRouter.put('/:id', UserProgramaController.update);
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.delete('/:id', UserProgramaController.delete);
+UserProgramaRouter.delete('/:id', userprogramacontroller.delete);
 
 /**
  * Post track
@@ -113,7 +113,7 @@ UserProgramaRouter.delete('/:id', UserProgramaController.delete);
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.get('/user/:user_id', UserProgramaController.getByUserId);
+UserProgramaRouter.get('/user/:user_id', userprogramacontroller.getByUserId);
 
 /**
  * Post track
@@ -135,7 +135,7 @@ UserProgramaRouter.get('/user/:user_id', UserProgramaController.getByUserId);
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.post('/report/:user_id', UserProgramaController.createAndGenerateReport);
+UserProgramaRouter.post('/report/:user_id', userprogramacontroller.createAndGenerateReport);
 
 /**
  * Post track
@@ -157,7 +157,7 @@ UserProgramaRouter.post('/report/:user_id', UserProgramaController.createAndGene
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.post('/getprogramcompleto/:user_id', UserProgramaController.getByUserIdAndOrderByDia);
+UserProgramaRouter.post('/getprogramcompleto/:user_id', userprogramacontroller.getByUserIdAndOrderByDia);
 
 /**
  * Post track
@@ -195,7 +195,7 @@ UserProgramaRouter.post('/getprogramcompleto/:user_id', UserProgramaController.g
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.put('/:user_id/:id', UserProgramaController.updateByUserAndTecnica);
+UserProgramaRouter.put('/:user_id/:id', userprogramacontroller.updateByUserAndTecnica);
 
 
 export default UserProgramaRouter;
