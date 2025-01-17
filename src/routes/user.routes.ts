@@ -146,4 +146,21 @@ UserRoutes.get('/perfilUsuario/:id', UserController.getUserProfile);
  */
 UserRoutes.post('/actualizarPerfil/:id', upload, UserController.updateProfile);
 
+/**
+ * Post track
+ * @openapi
+ * /users/empresa:
+ *    get:
+ *      tags:
+ *        - Users
+ *      summary: "Obtener todos los Usuarios por la empresa del administrador"
+ *      description: Este endpoint es para obtener todos los Usuarios por empresa
+ *      responses:
+ *        '200':
+ *          description: Retorna los Usuarios
+ *        '422':
+ *          description: Error de validacion.
+ */
+UserRoutes.get('/users/empresa', Authorization,UserController.listCompanyUsers);
+
 export default UserRoutes;

@@ -5,6 +5,9 @@ import path from "path";
 import fs from "fs";
 import { UserResponses } from "../../models/User/user_responses";
 import { Hierarchical_level } from "../../models/User/hierarchical_level";
+import { Op } from "sequelize";
+import { UserEstresSession } from "../../models/Clasificacion/userestressession";
+
 class UserController {
   async login(req: any, res: any) {
     const { username, password } = req.body;
@@ -221,6 +224,87 @@ class UserController {
     } catch (error) {
       console.error("Error al obtener el usuario:", error);
       res.status(500).json({ error: "Error interno del servidor" });
+    }
+  }
+
+  async listCompanyUsers(req: any, res: any) {
+    try {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const offset = (page - 1) * limit;
+  
+      const userId = req.userId.userId;
+      console.log('userId:', userId);
+  
+      if (!userId) {
+        return res.status(400).json({
+          message: 'User ID is missing or invalid'
+        });
+      }
+  
+      const currentUser = await User.findByPk(userId);
+  
+      if (!currentUser) {
+        return res.status(404).json({
+          message: 'Usuario no encontrado'
+        });
+      }
+  
+      const totalUsers = await User.count({
+        where: {
+          empresa_id: currentUser.empresa_id,
+          id: {
+            [Op.ne]: userId
+          }
+        }
+      });
+  
+      const users = await User.findAll({
+        attributes: ['id', 'username', 'email'],
+        where: {
+          empresa_id: currentUser.empresa_id,
+          id: {
+            [Op.ne]: userId
+          }
+        },
+        include: [
+          {
+            model: UserResponses,
+            attributes: [],
+            include: [
+              {
+                model: Hierarchical_level,
+                attributes: ['level'],
+              }
+            ]
+          },
+          {
+            model: UserEstresSession,
+            attributes: ['estres_nivel_id'],
+            required: false
+          }
+        ],
+        limit,
+        offset,
+        raw: true,
+        nest: true,
+        logging: console.log
+      });
+  
+      return res.status(200).json({
+        users,
+        pagination: {
+          total: totalUsers,
+          page,
+          pages: Math.ceil(totalUsers / limit)
+        }
+      });
+  
+    } catch (error: any) {
+      return res.status(500).json({
+        message: 'Error al obtener los usuarios',
+        error: error.message
+      });
     }
   }
 }

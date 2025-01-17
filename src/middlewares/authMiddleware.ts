@@ -58,7 +58,7 @@ function Authorization(req: any, res: any, next: any) {
         message: "Invalid Token Format",
       });
     }
-    const secret = process.env.SECRET_KEY ?? '';
+    const secret = process.env.JWT_SECRET ?? '';
     const decode = jwt.verify(token, secret);
     req.userId = decode;
     next();
