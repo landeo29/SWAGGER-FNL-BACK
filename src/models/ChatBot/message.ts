@@ -3,7 +3,6 @@ import {
   AllowNull,
   BelongsTo,
   Column,
-  CreatedAt,
   DataType,
   ForeignKey,
   Model,
@@ -50,6 +49,7 @@ export class Message extends Model {
   @Column(DataType.INTEGER)
   message_length!: number;
 
-  @CreatedAt
+  @AllowNull(true)
+  @Column(DataType.DATE)
   created_at!: Date;
 }

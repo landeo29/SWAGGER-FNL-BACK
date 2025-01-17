@@ -86,15 +86,16 @@ class OpenaiController {
   
         Nota: Solo responde con el JSON válido, y sin saltos de linea ni \`\`\`, response un texto plano listo para parsear.
       `;
-      const result = await model.generateContent(prompt);
-      console.log(
-        `--------------------${element.min}-${element.max}-----------------------`
-      );
-      console.log(result.response.text());
+      
       let intentos = 0;
       let flag = false;
-      while (intentos < 5 && !flag) {
+      while (intentos < 10 && !flag) {
         try {
+          const result = await model.generateContent(prompt);
+          console.log(
+            `--------------------${element.min}-${element.max}-----------------------`
+          );
+          console.log(result.response.text());
           const resultGroup = JSON.parse(result.response.text());
           console.log(resultGroup);
 

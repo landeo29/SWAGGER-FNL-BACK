@@ -3,10 +3,9 @@ import { Message } from "../../models/ChatBot/message";
 import { Op } from "sequelize";
 
 class MessageController {
-  private timeZone: string = "America/Lima";
   async saveMessage(req: any, res: any) {
     const { content, userId } = req.body;
-    const localDate = moment.tz(new Date(), this.timeZone); // Obtener la hora actual en la zona horaria local
+    const localDate = moment.tz(new Date(), "America/Lima"); // Obtener la hora actual en la zona horaria local
     try {
       const message = await Message.create({
         content,
@@ -25,7 +24,7 @@ class MessageController {
   }
   async saveMessageFromBot(req: any, res: any) {
     const { content, userId } = req.body;
-    const localDate = moment.tz(new Date(), this.timeZone); // Obtener la hora actual en la zona horaria local
+    const localDate = moment.tz(new Date(), "America/Lima"); // Obtener la hora actual en la zona horaria local
     try {
       const message = await Message.create({
         content,
@@ -62,7 +61,7 @@ class MessageController {
 
       const messagesWithLocalTime = messages.map((message) => {
         const utcDate = moment.utc(message.created_at);
-        const zonedDate = utcDate.tz(this.timeZone);
+        const zonedDate = utcDate.tz("America/Lima");
         return {
           ...message.toJSON(),
           created_at: zonedDate.format("YYYY-MM-DD HH:mm:ss"),
