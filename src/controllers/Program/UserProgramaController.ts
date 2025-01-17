@@ -129,7 +129,8 @@ class UserProgramaController {
 
       const respuesta = this.generarTextorespuestas(data)
       
-      await OpenaiController.generatePrograms(user_id,
+      await OpenaiController.generateProgramsWithGemini(
+        user_id,
         user.username,
         age_range,
         hierarchical_level,

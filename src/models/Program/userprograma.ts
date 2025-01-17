@@ -35,7 +35,7 @@ export class UserPrograma extends Model {
   @Column(DataType.TEXT)
   guia!: string;
 
-  @AllowNull(false)
+  @AllowNull(true)
   @Column(DataType.TEXT)
   comentario!: string;
 

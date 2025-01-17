@@ -9,7 +9,9 @@ class OpenaiController {
   countTokens(text: string) {
     return text.split(" ").length;
   }
+  //a futuro crear nueva clase para cada conexion a un modelo diferente. en esta clase solo se quedaria los insert y validacion de datos
   generateProgramsWithGemini = async (
+    user_id: number,
     username: string,
     age_range: string,
     hierarchical_level: string,
@@ -18,43 +20,105 @@ class OpenaiController {
     estres_nivel: string,
     resumenRespuestas: string
   ) => {
-    const apiKey = process.env.GEMINI_API_KEY ?? '';
+    const apiKey = process.env.GEMINI_API_KEY ?? "";
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt =`
-        Deberás tener encuenta la siguiente información, te servirá:
-        Datos del usuario:
-          - Nombre: ${username}
-          - Edad: ${age_range}
-          - Nivel jerárquico: ${hierarchical_level}
-          - Nivel de responsabilidad: ${responsability_level}
-          - Género: ${gender}
-          - Nivel de estrés: ${estres_nivel}
-    
-          Respuestas al test de estrés:
-          ${resumenRespuestas}
-          Genera un programa personalizado para los días 1 a 3 (Técnicas de Relajación).
-          Este programa debe:
-          - Ser gradual y compatible con las actividades cotidianas del usuario.
-          - Contener técnicas realizables sin necesidad de elementos externos.
-          - Incluir un mínimo de 15 pasos detallados y fáciles de seguir por técnica.
-    
-          Responde en formato JSON estrictamente válido:
-          [
-            {
-              "día": (número del día, tipo int),
-              "nombre_técnica": "Nombre de la técnica",
-              "tipo_técnica": "Subtítulo breve de la técnica",
-              "descripción": "Inicia motivando al usuario por su nombre y explica regularmente la técnica.",
-              "guía": ["Paso 1: Descripción del paso...", "Paso 2: Descripción del paso...", ..., "Paso 15: Descripción del paso..."]
-            }
-          ]
-    
-          Nota: Solo responde con el JSON válido.
-        `
-    const result = await model.generateContent(prompt);
-    console.log(result.response.text());
-  }
+
+    const rangos = [
+      {
+        min: "1",
+        max: "3",
+      },
+      {
+        min: "4",
+        max: "6",
+      },
+      {
+        min: "8",
+        max: "10",
+      },
+      {
+        min: "11",
+        max: "13",
+      },
+      {
+        min: "14",
+        max: "16",
+      },
+      {
+        min: "17",
+        max: "19",
+      },
+      {
+        min: "20",
+        max: "21",
+      },
+    ];
+    for (const element of rangos) {
+      const prompt = `
+      Deberás tener encuenta la siguiente información, te servirá:
+      Datos del usuario:
+        - Nombre: ${username}
+        - Edad: ${age_range}
+        - Nivel jerárquico: ${hierarchical_level}
+        - Nivel de responsabilidad: ${responsability_level}
+        - Género: ${gender}
+        - Nivel de estrés: ${estres_nivel}
+  
+        Respuestas al test de estrés:
+        ${resumenRespuestas}
+        Genera un programa personalizado para los días ${element.min} a ${element.max} (Técnicas de Relajación).
+        Este programa debe:
+        - Ser gradual y compatible con las actividades cotidianas del usuario.
+        - Contener técnicas realizables sin necesidad de elementos externos.
+        - Incluir un mínimo de 15 pasos detallados y fáciles de seguir por técnica.
+  
+        Responde en formato JSON estrictamente válido:
+        [
+          {
+            "día": (número del día, tipo int),
+            "nombre_técnica": "Nombre de la técnica",
+            "tipo_técnica": "Subtítulo breve de la técnica",
+            "descripción": "Inicia motivando al usuario por su nombre y explica regularmente la técnica.",
+            "guía": ["Paso 1: Descripción del paso...", "Paso 2: Descripción del paso...", ..., "Paso 15: Descripción del paso..."]
+          }
+        ]
+  
+        Nota: Solo responde con el JSON válido, y sin saltos de linea ni \`\`\`, response un texto plano listo para parsear.
+      `;
+      const result = await model.generateContent(prompt);
+      console.log(
+        `--------------------${element.min}-${element.max}-----------------------`
+      );
+      console.log(result.response.text());
+      let intentos = 0;
+      let flag = false;
+      while (intentos < 5 && !flag) {
+        try {
+          const resultGroup = JSON.parse(result.response.text());
+          console.log(resultGroup);
+
+          const registros = resultGroup.map((item: any) => ({
+            user_id: user_id,
+            dia: item.día,
+            nombre_tecnica: item.nombre_técnica,
+            tipo_tecnica: item.tipo_técnica,
+            descripcion: item.descripción,
+            guia: JSON.stringify(item.guía),
+            start_date: item.día === 1 ? new Date() : null,
+            completed_date: null,
+            comentario: item.comentario || null,
+            estrellas: item.estrellas || 3,
+          }));
+          await UserPrograma.bulkCreate(registros);
+          flag = true;
+        } catch (error) {
+          console.log("errorrrr gaaa");
+          intentos++;
+        }
+      }
+    }
+  };
   generatePrograms = async (
     user_id: number,
     username: string,
@@ -67,7 +131,7 @@ class OpenaiController {
   ) => {
     const apiKey = process.env.OPENAI_API_KEY;
     const url = "https://api.openai.com/v1/chat/completions";
-  
+
     // Dividir prompts en tres partes
     const prompts = [
       {
@@ -239,13 +303,13 @@ class OpenaiController {
           `,
       },
     ];
-  
+
     for (const { seccion, prompt } of prompts) {
       let structuredPrompt = {
         role: "user",
         content: prompt,
       };
-  
+
       let systemContext = {
         role: "system",
         content: `
@@ -264,7 +328,7 @@ class OpenaiController {
         
         `,
       };
-  
+
       let gptResponse = await axios.post(
         url,
         {
@@ -282,15 +346,16 @@ class OpenaiController {
           },
         }
       );
-      const gptResponsedata = gptResponse.data.choices[0].message.content.trim();
+      const gptResponsedata =
+        gptResponse.data.choices[0].message.content.trim();
       console.debug(`Respuesta de GPT para ${seccion}:`, gptResponsedata);
       // Validar y parsear JSON
       try {
         //Intentaremos subir la data tan pronto la tengamos lista.
         // programas.push(...JSON.parse(gptResponse));
-  
+
         let resultGroup = JSON.parse(gptResponsedata);
-  
+
         const registros = resultGroup.map((item: any) => ({
           user_id: user_id,
           dia: item.día,
@@ -303,7 +368,7 @@ class OpenaiController {
           comentario: item.comentario || null,
           estrellas: item.estrellas || 3,
         }));
-  
+
         // Insertar registros en la base de datos
         await UserPrograma.bulkCreate(registros);
       } catch (error) {
@@ -314,7 +379,7 @@ class OpenaiController {
   analyzeMessage = async (mensaje: any) => {
     const apiKey = process.env.OPENAI_API_KEY;
     const url = "https://api.openai.com/v1/chat/completions";
-  
+
     const systemMessage = {
       role: "system",
       content: `
@@ -326,12 +391,12 @@ class OpenaiController {
       }
     `,
     };
-  
+
     const message = {
       role: "user",
       content: mensaje,
     };
-  
+
     try {
       const response = await axios.post(
         url,
@@ -350,9 +415,9 @@ class OpenaiController {
           },
         }
       );
-  
+
       const rpta = JSON.parse(response.data.choices[0].message.content.trim());
-  
+
       switch (rpta["sentimiento"]) {
         case "Negativo":
           rpta["score"] = -1;
@@ -364,9 +429,9 @@ class OpenaiController {
           rpta["score"] = 0;
           break;
       }
-  
+
       rpta["message_length"] = mensaje.length;
-  
+
       return rpta;
     } catch (error: any) {
       console.error(
@@ -474,7 +539,7 @@ class OpenaiController {
 
       // Mensaje de éxito para la lectura del historial
       console.log("Historial leído correctamente:", limitedChatHistory);
-      
+
       // Enviar todo el historial limitado y el mensaje del sistema en una sola solicitud
       const response = await axios.post(
         url,
@@ -509,8 +574,6 @@ class OpenaiController {
         }`
       );
     }
-  }
-
-
+  };
 }
 export default new OpenaiController();
