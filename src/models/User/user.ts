@@ -74,7 +74,7 @@ export class User extends Model {
   @ForeignKey(() => Empresas)
   @AllowNull(true)
   @Column(DataType.INTEGER)
-  empresa_id!: Empresas;
+  empresa_id!: number;
 
   @BelongsTo(() => Empresas)
   empresa!: Empresas;

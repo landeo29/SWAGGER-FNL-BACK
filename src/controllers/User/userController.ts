@@ -36,6 +36,7 @@ class UserController {
         permisopoliticas: user.permisopoliticas,
         userresponsebool: user.userresponsebool,
         testestresbool: user.testestresbool,
+        id_empresa: user.empresa_id,
       });
     } catch (error) {
       console.error("Error en el login:", error);
@@ -95,7 +96,7 @@ class UserController {
       const userProfile = await UserResponses.findOne({
         where: { user_id: req.params.id },
         include: [
-          { model: User, attributes: ["email", "profileImage"] },
+          { model: User, attributes: ["email", "profileImage", "empresa_id"] },
           { model: Hierarchical_level, attributes: ["level"] },
         ],
       });
@@ -109,6 +110,7 @@ class UserController {
         hierarchicalLevel: userProfile.hierarchical_level.level,
         gender_id: userProfile.gender_id,
         profileImage: userProfile.user.profileImage,
+        id_empresa: userProfile.user.empresa_id,
       };
 
       return res.json(response);
