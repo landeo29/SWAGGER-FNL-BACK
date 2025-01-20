@@ -214,7 +214,7 @@ class UserProgramaController {
 
       // Actualizar los campos comentario y estrellas si se pasan en el body
       userPrograma.comentario = comentario || userPrograma.comentario;
-      userEstresSession.caritas = caritas !== undefined ? caritas : 0;
+      userEstresSession.caritas = caritas !== undefined ? caritas : userEstresSession.caritas;
       userPrograma.estrellas = estrellas !== undefined ? estrellas : userPrograma.estrellas;
 
 
