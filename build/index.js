@@ -21,8 +21,7 @@ function main() {
         var _a;
         try {
             const PORT = (_a = process.env.PORT) !== null && _a !== void 0 ? _a : 3000;
-            // Sincronización con la base de datos
-            // await database.sync();
+            //sincronizacion de base de datos
             yield database_1.default.sync();
             // Inicialización del servidor
             app_1.default.listen(PORT, () => {

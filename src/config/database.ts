@@ -12,10 +12,10 @@ class Database {
 
   init() {
     try {
-      const name = process.env.DB_NAME || 'fnlprueba'
+      const name = process.env.DB_NAME || 'chat_app2'
       console.log(name)
-      const user = process.env.DB_USER || 'paul'
-      const password = process.env.DB_PASSWORD || 'paulp'
+      const user = process.env.DB_USER || 'root'
+      const password = process.env.DB_PASSWORD || ''
       const host = process.env.DB_HOST || 'localhost'
       const dialect = (process.env.DB_DIALECT as Dialect) || 'mysql'
       const port = parseInt(process.env.DB_PORT || '3306')

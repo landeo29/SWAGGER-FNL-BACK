@@ -1,125 +1,154 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const sequelize_1 = require("sequelize");
-class Test_estres_salida extends sequelize_1.Model {
-    static initModel(sequelize) {
-        super.init({
-            id: {
-                type: sequelize_1.DataTypes.INTEGER,
-                autoIncrement: true,
-                primaryKey: true,
-            },
-            user_id: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: false,
-                references: {
-                    model: "users",
-                    key: "id",
-                },
-            },
-            pregunta_1: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_2: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_3: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_4: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_5: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_6: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_7: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_8: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_9: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_10: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_11: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_12: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_13: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_14: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_15: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_16: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_17: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_18: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_19: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_20: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_21: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_22: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            pregunta_23: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: true,
-            },
-            estado: {
-                type: sequelize_1.DataTypes.STRING(20),
-                allowNull: true,
-            },
-        }, // attributes
-        {
-            sequelize,
-            timestamps: false,
-            tableName: 'test_estres_salida',
-        });
-        return this;
-    }
-}
-exports.default = Test_estres_salida;
+exports.TestEstresSalida = void 0;
+const sequelize_typescript_1 = require("sequelize-typescript");
+const user_1 = require("../User/user");
+let TestEstresSalida = class TestEstresSalida extends sequelize_typescript_1.Model {
+};
+exports.TestEstresSalida = TestEstresSalida;
+__decorate([
+    (0, sequelize_typescript_1.ForeignKey)(() => user_1.User),
+    (0, sequelize_typescript_1.AllowNull)(false),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "user_id", void 0);
+__decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => user_1.User),
+    __metadata("design:type", user_1.User)
+], TestEstresSalida.prototype, "user", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_1", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_2", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_3", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_4", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_5", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_6", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_7", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_8", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_9", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_10", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_11", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_12", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_13", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_14", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_15", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_16", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_17", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_18", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_19", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_20", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_21", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_22", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], TestEstresSalida.prototype, "pregunta_23", void 0);
+__decorate([
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Length)({ min: 2, max: 20 }),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.STRING),
+    __metadata("design:type", String)
+], TestEstresSalida.prototype, "estado", void 0);
+exports.TestEstresSalida = TestEstresSalida = __decorate([
+    (0, sequelize_typescript_1.Table)({
+        timestamps: false,
+        tableName: "test_estres_salida",
+    })
+], TestEstresSalida);

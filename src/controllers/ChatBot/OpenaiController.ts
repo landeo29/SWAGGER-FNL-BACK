@@ -4,6 +4,7 @@ import { User } from "../../models/User/user";
 import axios from "axios";
 import { UserPrograma } from "../../models/Program/userprograma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { ChatMessage } from "../../interfaces/ChatMessage";
 
 class OpenaiController {
   countTokens(text: string) {
@@ -22,36 +23,41 @@ class OpenaiController {
   ) => {
     const apiKey = process.env.GEMINI_API_KEY ?? "";
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const generationConfig = {
+      responseMimeType: "application/json",
+    };
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", generationConfig });
 
     const rangos = [
       {
         min: "1",
         max: "3",
+        tipotecnica:"Tecnicas de Relajacion"
       },
       {
         min: "4",
-        max: "6",
+        max: "7",
+        tipotecnica:"Tecnicas de Relajacion"
       },
       {
         min: "8",
         max: "10",
+        tipotecnica:" Reestructuracion Cognitiva"
       },
       {
         min: "11",
-        max: "13",
+        max: "14",
+        tipotecnica:"Reestructuracion Cognitiva"
       },
       {
-        min: "14",
-        max: "16",
+        min: "15",
+        max: "18",
+        tipotecnica:"Técnicas de Programación Neurolingüística"
       },
       {
-        min: "17",
-        max: "19",
-      },
-      {
-        min: "20",
+        min: "19",
         max: "21",
+        tipotecnica:"Técnicas de Programación Neurolingüística"
       },
     ];
     for (const element of rangos) {
@@ -67,7 +73,7 @@ class OpenaiController {
   
         Respuestas al test de estrés:
         ${resumenRespuestas}
-        Genera un programa personalizado para los días ${element.min} a ${element.max} (Técnicas de Relajación).
+        Genera un programa personalizado para los días ${element.min} a ${element.max} siento el tipo de tecnica ${element.tipotecnica} asegurate de generar solo 1 programa por dia.
         Este programa debe:
         - Ser gradual y compatible con las actividades cotidianas del usuario.
         - Contener técnicas realizables sin necesidad de elementos externos.
@@ -86,7 +92,6 @@ class OpenaiController {
   
         Nota: Solo responde con el JSON válido, y sin saltos de linea ni \`\`\`, response un texto plano listo para parsear.
       `;
-      
       let intentos = 0;
       let flag = false;
       while (intentos < 10 && !flag) {
@@ -576,34 +581,101 @@ class OpenaiController {
       );
     }
   };
-  chat = async (req: any, res: any) =>{
+  analyzeMessageWithGemini = async (mensaje: any) => {
+    const apiKey = process.env.GEMINI_API_KEY ?? "";
+
+    const prompt = `
+    Analiza el siguiente mensaje, de parte de los usuarios de nuestra app para ayuda psicológica en el trabajo:
+    ${mensaje}
+
+    -Responde en formato JSON estrictamente válido, response un texto plano listo para parsear usando JSON.parse(), el formato es el siguiente:
+      {
+        "sentimiento": "Positivo" (El mensaje tiene un tono optimista o alegre) o "Negativo" (El mensaje tiene un tono triste, enojado o preocupado) o "Neutral"(El mensaje no refleja emociones claras),
+        "factor_psicosocial": "Relación interpersonal" (e.g., problemas con jefe o compañeros) o "Estrés laboral" (e.g., carga laboral, falta de tiempo) o "Salud emocional" (e.g., sentirse triste, desmotivado) o "Ninguno" (si el mensaje no menciona ningún factor específico),
+      }
+    `;
+
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      
+      const generationConfig = {
+        temperature: 1,
+        topP: 0.95,
+        topK: 40,
+        maxOutputTokens: 1500,
+        responseMimeType: "application/json",
+      };
+      const model = genAI.getGenerativeModel({
+        model: "gemini-2.0-flash-exp",
+        generationConfig
+      });
+      const result = await model.generateContent(prompt);
+
+      console.log(result.response.text());
+      const rpta = JSON.parse(result.response.text());
+
+      switch (rpta["sentimiento"]) {
+        case "Negativo":
+          rpta["score"] = -1;
+          break;
+        case "Positivo":
+          rpta["score"] = 1;
+          break;
+        default: //Neutral
+          rpta["score"] = 0;
+          break;
+      }
+
+      rpta["message_length"] = mensaje.length;
+      console.log("analisis: ", rpta);
+      return rpta;
+    } catch (error: any) {
+      console.error(
+        "Error al obtener respuesta del bot:",
+        error.response?.data || error.message
+      );
+      throw new Error(
+        `Error al obtener respuesta del bot: ${
+          error.response?.data?.error?.message || error.message
+        }`
+      );
+    }
+  };
+  chat = async (req: any, res: any) => {
     const { prompt, userId } = req.body;
     const apiKey = process.env.GEMINI_API_KEY ?? "";
     const genAI = new GoogleGenerativeAI(apiKey);
-    
+
     try {
       // Obtener el usuario por userId para obtener el username
       const user = await User.findByPk(userId);
-      
+
       if (!user) {
         throw new Error("Usuario no encontrado");
       }
 
-      const username = user.username; 
+      const username = user.username;
 
       const messages = await Message.findAll({
         where: {
           [Op.or]: [
-            { user_id: userId, user_id_receptor: 1 },
-            { user_id: 1, user_id_receptor: userId },
+            { user_id: userId },
+            { user_id_receptor: userId },
           ],
         },
-        order: [["created_at", "ASC"]],
+        
+        offset: 2,
       });
-      const chatHistory = messages.map((msg) => ({
-        role: msg.user_id === userId ? "user" : "model",
-        parts: [{ text: msg.content }],
-      }));
+      console.log(messages);
+      console.log("lenght: ", messages.length);
+      let chatHistory: ChatMessage[] =[];
+      if(messages.length !== 0){
+        console.log("entra xd");
+        chatHistory = messages.map((msg) => ({
+          role: msg.user_id === userId ? "user" : "model",
+          parts: [{ text: msg.content }],
+        }));
+      }
       const systemMessage = `
           Tu nombre es Funcy, un asistente de IA especializado en apoyo psicológico y bienestar emocional. Tu propósito es ofrecer orientación comprensiva y práctica a ${username}, quien puede estar enfrentando estrés laboral o emocional. 
       
@@ -632,25 +704,51 @@ class OpenaiController {
           Evita sugerencias superficiales o generales. Cada respuesta debe ser rica en contenido, relevante y orientada a la acción, asegurando que ${username} sienta que está recibiendo apoyo práctico y emocional de calidad.
           Importante, si el mensaje del usuario no está relacionado con tus facultados (ayuda psicológica) entonces deberás responder que no estás habilitado para responder mensajes que no estén relacionados al apoyo psicológico y bienestar emocional.
         `;
-      
+
       const model = genAI.getGenerativeModel({
         model: "gemini-2.0-flash-exp",
-        systemInstruction: systemMessage});
+        systemInstruction: systemMessage,
+      });
+      console.log("aqui antes de crear chat")
       const chat = model.startChat({
-        history: chatHistory,
+        history: chatHistory.length > 0 ? chatHistory : undefined,
         generationConfig: {
           maxOutputTokens: 1500,
           temperature: 0.5,
-        }
+        },
       });
+      console.log("aqui despues de crear chat")
+      const result = await chat.sendMessage(prompt);
+      console.log(result)
+      if(!result) return res.status(500).json({message: "error al consultar Gemini"})
+      const responseGemini = result.response.text();
+      console.log(responseGemini);
+
+      const analisis = await this.analyzeMessageWithGemini(prompt);
       
-      //chatHistory.push({ role: "user", parts:[{text:prompt}] });
-      let result = await chat.sendMessage(prompt);
-      return res.json({
-        response: result.response.text(),
+      await Message.bulkCreate([
+        {
+          content: prompt,
+          user_id: userId,
+          user_id_receptor: 1,
+          score: analisis.score,
+          message_length: analisis.message_length,
+          factor_psicosocial: analisis.factor_psicosocial,
+          sentimientos: analisis.sentimiento,
+        },
+        {
+          content: responseGemini,
+          user_id: 1,
+          user_id_receptor: userId,// Incrementar 1 ms
+        },
+      ]);
+      return res.status(201).json({
+        response: responseGemini,
       });
+
+      //chatHistory.push({ role: "user", parts:[{text:prompt}] });
     } catch (error: any) {
-      console.log("error: ", error.message)
+      console.log("error: ", error.message);
     }
   };
 }

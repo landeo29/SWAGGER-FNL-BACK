@@ -56,6 +56,62 @@ const swaggerDefinition = {
                     }
                 },
             },
+            userProfile: {
+                type: "object",
+                properties: {
+                    username: {
+                        type: "string",
+                        example: "paul"
+                    },
+                    email: {
+                        type: "string",
+                        example: "example@gmail.com"
+                    },
+                    profileImage: {
+                        type: "string",
+                        format: "binary"
+                    }
+                }
+            },
+            userResponse: {
+                type: "object",
+                properties: {
+                    user_id: {
+                        type: "int64",
+                        example: 2
+                    },
+                    age_range_id: {
+                        type: "int64",
+                        example: 2
+                    },
+                    hierarchical_level_id: {
+                        type: "int64",
+                        example: 2
+                    },
+                    responsability_level_id: {
+                        type: "int64",
+                        example: 2
+                    },
+                    gender_id: {
+                        type: "int64",
+                        example: 2
+                    },
+                    created_at: {
+                        type: "string",
+                        format: "date-time"
+                    }
+                }
+            },
+            userPrograma: {
+                user_id: {
+                    type: "int64",
+                    example: 2
+                },
+                dia: {
+                    type: "string",
+                    format: "date-time"
+                }
+            }
         },
     },
 };
