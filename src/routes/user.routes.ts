@@ -1,6 +1,7 @@
 import {Router} from "express"
 import UserController from "../controllers/User/userController";
 import upload from "../middlewares/uploadMiddleware";
+import { Authorization } from "../middlewares/authMiddleware";
 
 const UserRoutes = Router();
 // Rutas de usuario
