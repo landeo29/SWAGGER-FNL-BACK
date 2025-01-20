@@ -5,6 +5,7 @@ import path from "path";
 import fs from "fs";
 import { UserResponses } from "../../models/User/user_responses";
 import { Hierarchical_level } from "../../models/User/hierarchical_level";
+
 class UserController {
   async login(req: any, res: any) {
     const { username, password } = req.body;
@@ -37,6 +38,7 @@ class UserController {
         userresponsebool: user.userresponsebool,
         testestresbool: user.testestresbool,
         id_empresa: user.empresa_id,
+        role_id: user.role_id, 
       });
     } catch (error) {
       console.error("Error en el login:", error);
@@ -45,40 +47,35 @@ class UserController {
   }
 
   async createUser(req: any, res: any) {
-    const { username, password, email, empresa_id } = req.body;
-    const file = req.file; // Ahora usamos req.file, ya que es un solo archivo
+    const { username, password, email, empresa_id, role_id } = req.body;
+    const file = req.file;
 
     try {
-      // Validaciones básicas
-      if (!username || !password || !email) {
+      if (!username || !password || !email || !role_id) {
         return res
           .status(400)
           .json({ error: "Todos los campos son obligatorios" });
       }
 
-      // Manejo de la imagen
       let profileImagePath = null;
       if (file) {
         const uploadDir = path.join(__dirname, "../imagenes");
         if (!fs.existsSync(uploadDir)) {
           fs.mkdirSync(uploadDir, { recursive: true });
         }
-        //nunca estaba siendo usado
-        //const fileName = `${Date.now()}-${file.filename}`;
         profileImagePath = `/imagenes/${file.filename}`;
       }
 
-      // Encriptar contraseña
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Crear usuario
       const user = await User.create({
         username,
         password: hashedPassword,
         email,
         profileImage: profileImagePath,
         created_at: new Date(),
-        empresa_id
+        empresa_id,
+        role_id,
       });
 
       res
@@ -90,13 +87,12 @@ class UserController {
     }
   }
 
-  // Obtener perfil de usuario
   async getUserProfile(req: any, res: any) {
     try {
       const userProfile = await UserResponses.findOne({
         where: { user_id: req.params.id },
         include: [
-          { model: User, attributes: ["email", "profileImage", "empresa_id"] },
+          { model: User, attributes: ["email", "profileImage", "empresa_id", "role_id"] }, 
           { model: Hierarchical_level, attributes: ["level"] },
         ],
       });
@@ -111,6 +107,7 @@ class UserController {
         gender_id: userProfile.gender_id,
         profileImage: userProfile.user.profileImage,
         id_empresa: userProfile.user.empresa_id,
+        role_id: userProfile.user.role_id, 
       };
 
       return res.json(response);
@@ -122,7 +119,7 @@ class UserController {
 
   async updateProfile(req: any, res: any) {
     const { id } = req.params;
-    const { username, email } = req.body;
+    const { username, email, role_id } = req.body;
 
     try {
       const user = await User.findByPk(id);
@@ -132,12 +129,11 @@ class UserController {
 
       if (username) user.username = username;
       if (email) user.email = email;
+      if (role_id) user.role_id = role_id; 
 
-      // Verifica si hay una nueva imagen
       if (req.file) {
-        //const uploadDir = path.join(__dirname, '../imagenes');
-        const newProfileImagePath = `/imagenes/${req.file.filename}`; // Usar el nombre del archivo generado por multer
-        user.profileImage = newProfileImagePath; // Actualiza la ruta de la imagen en el modelo
+        const newProfileImagePath = `/imagenes/${req.file.filename}`;
+        user.profileImage = newProfileImagePath;
       }
 
       await user.save();
@@ -150,7 +146,6 @@ class UserController {
     }
   }
 
-  // Obtener todos los usuarios
   async getAllUsers(_req: any, res: any) {
     try {
       const users = await User.findAll();
@@ -161,7 +156,6 @@ class UserController {
     }
   }
 
-  // Actualizar un usuario
   async updateUser(req: any, res: any) {
     const { id } = req.params;
     const {
@@ -172,6 +166,7 @@ class UserController {
       funcyinteract,
       userresponsebool,
       testestresbool,
+      role_id,
     } = req.body;
 
     try {
@@ -183,21 +178,22 @@ class UserController {
 
       if (username) user.username = username;
       if (email) user.email = email;
-      if (password) user.password = await bcrypt.hash(password, 10); // Encriptar la nueva contraseña
+      if (password) user.password = await bcrypt.hash(password, 10);
       if (permisopoliticas !== undefined)
         user.permisopoliticas = permisopoliticas;
       if (funcyinteract !== undefined) user.funcyinteract = funcyinteract;
 
       if (userresponsebool !== undefined) {
-        // Convertir booleano a TINYINT(1) (1 o 0)
         user.userresponsebool =
-          userresponsebool === true || userresponsebool === "true" ? true : false;
+          userresponsebool === true || userresponsebool === "true";
       }
 
       if (testestresbool !== undefined) {
         user.testestresbool =
-          testestresbool === true || testestresbool === "true" ? true : false;
+          testestresbool === true || testestresbool === "true";
       }
+
+      if (role_id) user.role_id = role_id;
 
       await user.save();
 
@@ -210,7 +206,6 @@ class UserController {
     }
   }
 
-  // Obtener un usuario por ID
   async getUserById(req: any, res: any) {
     const { id } = req.params;
 

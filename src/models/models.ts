@@ -12,6 +12,7 @@ import { Hierarchical_level } from "./User/hierarchical_level";
 import { ResponsabilityLevel } from "./User/responsabilityLevel";
 import { User } from "./User/user";
 import { UserResponses } from "./User/user_responses";
+import { Role } from "./User/role";
 
 const models = [
   User,
@@ -27,5 +28,6 @@ const models = [
   Message,
   Empresas,
   UserPrograma,
+  Role,
 ];
 export default models;

@@ -11,6 +11,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const sequelize_typescript_1 = require("sequelize-typescript");
+const userestressession_1 = require("../Clasificacion/userestressession");
+const user_responses_1 = require("./user_responses");
+const empresas_1 = require("../Global/empresas");
+const role_1 = require("../User/role");
 let User = class User extends sequelize_typescript_1.Model {
 };
 exports.User = User;
@@ -65,6 +69,34 @@ __decorate([
     sequelize_typescript_1.CreatedAt,
     __metadata("design:type", Date)
 ], User.prototype, "createdAt", void 0);
+__decorate([
+    (0, sequelize_typescript_1.HasOne)(() => userestressession_1.UserEstresSession),
+    __metadata("design:type", userestressession_1.UserEstresSession)
+], User.prototype, "userestressessions", void 0);
+__decorate([
+    (0, sequelize_typescript_1.HasOne)(() => user_responses_1.UserResponses),
+    __metadata("design:type", user_responses_1.UserResponses)
+], User.prototype, "userresponses", void 0);
+__decorate([
+    (0, sequelize_typescript_1.ForeignKey)(() => empresas_1.Empresas),
+    (0, sequelize_typescript_1.AllowNull)(true),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], User.prototype, "empresa_id", void 0);
+__decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => empresas_1.Empresas),
+    __metadata("design:type", empresas_1.Empresas)
+], User.prototype, "empresa", void 0);
+__decorate([
+    (0, sequelize_typescript_1.ForeignKey)(() => role_1.Role),
+    (0, sequelize_typescript_1.AllowNull)(false),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Number)
+], User.prototype, "role_id", void 0);
+__decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => role_1.Role),
+    __metadata("design:type", role_1.Role)
+], User.prototype, "role", void 0);
 exports.User = User = __decorate([
     (0, sequelize_typescript_1.Table)({
         timestamps: false,
