@@ -5,10 +5,14 @@ import path from "path";
 import fs from "fs";
 import { UserResponses } from "../../models/User/user_responses";
 import { Hierarchical_level } from "../../models/User/hierarchical_level";
+<<<<<<< HEAD
 import { readFile, utils } from "xlsx";
 import { generarPassword } from "../../utils/utils";
 import { Op } from "sequelize";
 import { emailQueue } from "../../services/EmailQueue";
+=======
+
+>>>>>>> d08c8bd879d207a1a154fcdcc55533736bce9625
 class UserController {
   async login(req: any, res: any) {
     const { username, password } = req.body;

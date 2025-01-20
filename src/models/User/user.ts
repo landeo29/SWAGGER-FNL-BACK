@@ -14,9 +14,10 @@ import {
 import { UserEstresSession } from "../Clasificacion/userestressession";
 import { UserResponses } from "./user_responses";
 import { Empresas } from "../Global/empresas";
+import { Role } from "../User/role"; 
 
 @Table({
-  timestamps:false,
+  timestamps: false,
   tableName: "users"
 })
 export class User extends Model {
@@ -46,7 +47,6 @@ export class User extends Model {
   @Column(DataType.INTEGER)
   funcyinteract!: number;
 
-  
   @AllowNull(true)
   @Column(DataType.STRING)
   profileImage!: string;
@@ -79,4 +79,12 @@ export class User extends Model {
 
   @BelongsTo(() => Empresas)
   empresa!: Empresas;
+
+  @ForeignKey(() => Role) 
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  role_id!: number; 
+
+  @BelongsTo(() => Role) 
+  role!: Role;
 }

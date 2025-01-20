@@ -48,7 +48,7 @@ class Database {
                 yield ((_a = this.connection) === null || _a === void 0 ? void 0 : _a.authenticate());
                 console.log("Conexión a la base de datos establecida correctamente.");
                 // Sincronizar los modelos con la base de datos
-                yield ((_b = this.connection) === null || _b === void 0 ? void 0 : _b.sync({ alter: true }));
+                yield ((_b = this.connection) === null || _b === void 0 ? void 0 : _b.sync({ alter: false }));
                 console.log("Base de datos sincronizada correctamente.");
             }
             catch (err) {
@@ -62,6 +62,9 @@ class Database {
                 });
             }
         });
+    }
+    getConnection() {
+        return this.connection;
     }
 }
 exports.default = new Database();
