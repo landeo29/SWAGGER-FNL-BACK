@@ -7,7 +7,6 @@ import {
   Unique,
   Default,
   IsEmail,
-  CreatedAt,
   ForeignKey,
   BelongsTo,
   HasOne,
@@ -62,7 +61,9 @@ export class User extends Model {
   @Column(DataType.BOOLEAN)
   testestresbool!: boolean;
 
-  @CreatedAt
+  @AllowNull(true)
+  @Default(DataType.NOW)
+  @Column(DataType.DATE)
   createdAt!: Date;
 
   @HasOne(() => UserEstresSession)
