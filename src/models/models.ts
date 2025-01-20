@@ -13,6 +13,9 @@ import { ResponsabilityLevel } from "./User/responsabilityLevel";
 import { User } from "./User/user";
 import { UserResponses } from "./User/user_responses";
 import { Role } from "./User/role";
+import { Tags } from "./Program/Tags";
+import { Activitys } from "./Program/activitys";
+import { ActivityTags } from "./Program/ActivityTags";
 
 const models = [
   User,
@@ -27,6 +30,9 @@ const models = [
   TestEstresSalida,
   Message,
   Empresas,
+  Tags,
+  Activitys,
+  ActivityTags,
   UserPrograma,
   Role,
 ];
