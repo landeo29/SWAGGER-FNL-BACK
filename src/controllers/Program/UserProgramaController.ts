@@ -189,7 +189,7 @@ class UserProgramaController {
 
   async updateByUserAndTecnica(req: any, res: any) {
     const { user_id, id } = req.params; // Obtener user_id y ide de los parámetros
-    const { comentario, estrellas } = req.body; // Obtener los campos que se quieren actualizar del body
+    const { comentario, estrellas, caritas } = req.body; // Obtener los campos que se quieren actualizar del body
 
     try {
       // Buscar el registro basado en user_id y
@@ -200,19 +200,33 @@ class UserProgramaController {
         },
       });
 
+      const userEstresSession = await UserEstresSession.findOne({
+        where: { user_id: user_id }
+      });
+
       if (!userPrograma) {
         return res.status(404).json({ error: "Programa no encontrado" });
       }
 
+      if (!userEstresSession) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+
       // Actualizar los campos comentario y estrellas si se pasan en el body
       userPrograma.comentario = comentario || userPrograma.comentario;
-      userPrograma.estrellas =
-        estrellas !== undefined ? estrellas : userPrograma.estrellas;
+      userEstresSession.caritas = caritas !== undefined ? caritas : userEstresSession.caritas;
+      userPrograma.estrellas = estrellas !== undefined ? estrellas : userPrograma.estrellas;
+
 
       // Guardar los cambios en la base de datos
       if (userPrograma.completed_date == null)
         userPrograma.completed_date = new Date();
 
+      //Guardar la fecha de creacion de los datos
+      if (userEstresSession.created_at == null)
+        userEstresSession.created_at = new Date();
+
+      await userEstresSession.save();
       await userPrograma.save();
 
       const nextProgram = await UserPrograma.findOne({
