@@ -1,4 +1,5 @@
 import { UserEstresSession } from "../../models/Clasificacion/userestressession";
+import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
 
 class UserEstresSessionController{
 
@@ -30,6 +31,20 @@ class UserEstresSessionController{
     try {
         // Busca si ya existe una sesión de estrés para el usuario
         const existingSession = await UserEstresSession.findOne({ where: { user_id } });
+
+
+        const estresNivel = await EstresNiveles.findOne({
+          where: { id: estres_nivel_id }
+        });
+
+        if (!estresNivel) {
+          console.log('No se encontró el registro con el id proporcionado.');
+          res.status(500).json({ message: 'Error del servidor.' });
+          return
+        }
+
+        const nuevaCantidad = estresNivel.cantidad ? estresNivel.cantidad + 1 : 1;
+        await estresNivel.update({ cantidad: nuevaCantidad });
 
         if (existingSession) {
             // Si la sesión ya existe, actualiza el estres_nivel_id
