@@ -1,11 +1,7 @@
 import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
 import { UserEstresSession } from "../../models/Clasificacion/userestressession";
-
 import { Sequelize } from 'sequelize';
 import { User } from "../../models/User/user";
-import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
-
-
 class UserEstresSessionController{
 
     // Función para obtener el estres_nivel_id por user_id
