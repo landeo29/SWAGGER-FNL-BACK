@@ -1,5 +1,6 @@
 import {Router} from "express"
 import UserEstresSessionController from "../controllers/User/userEstresSessionController";
+import { Authorization } from "../middlewares/authMiddleware";
 
 
 const UserEstresSesionRoutes = Router();
@@ -76,4 +77,22 @@ UserEstresSesionRoutes.post('/userestresessions/assign', UserEstresSessionContro
  *          description: Error de validacion.
  */
 UserEstresSesionRoutes.get('/userestresessions/:userId/grafica', UserEstresSessionController.graficaEstresLevel);
+
+/**
+ * Post track
+ * @openapi
+ * /userestresessions/empresa:
+ *    get:
+ *      tags:
+ *        - User Estres Sessions
+ *      summary: "Promedio de estres de la empresa por dia"
+ *      description: Este endpoint es para obtener el promedio de estres de la empresa por dia
+ *      responses:
+ *        '200':
+ *          description: Retorna el promedio de estres de la empresa por dia
+ *        '422':
+ *          description: Error de validacion.
+ */
+UserEstresSesionRoutes.get('/userestresessions/empresa', Authorization,UserEstresSessionController.promedioEstresEmpresaPorDia);
+
 export default UserEstresSesionRoutes;

@@ -1,6 +1,8 @@
 import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
 import { UserEstresSession } from "../../models/Clasificacion/userestressession";
 import { Sequelize } from 'sequelize';
+import { User } from "../../models/User/user";
+
 class UserEstresSessionController{
 
     // Función para obtener el estres_nivel_id por user_id
@@ -84,6 +86,45 @@ class UserEstresSessionController{
         return res.status(500).json({ error: 'Error interno del servidor' });
       }
     }    
+    async promedioEstresEmpresaPorDia(req: any, res: any) {
+      const userId = req.userId.userId;
+      console.log(userId);
+      try {
+
+        const user = await User.findByPk(userId);
+        if (!user) {
+          return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+    
+        const empresaId = user.empresa_id;
+    
+        const result = await UserEstresSession.findAll({
+          attributes: [
+            [Sequelize.fn('DATE', Sequelize.col('created_at')), 'date'],
+            [Sequelize.fn('AVG', Sequelize.col('estres_nivel_id')), 'average_stress_level']
+          ],
+          include: [{
+            model: User,
+            attributes: [],
+            where: { empresa_id: empresaId },
+            required: true
+          }],
+          group: [Sequelize.fn('DATE', Sequelize.col('created_at'))],
+          order: [[Sequelize.fn('DATE', Sequelize.col('created_at')), 'DESC']]
+        });
+    
+        const data = result.map(item => ({
+          date: item.get('date'),
+          average_stress_level: item.get('average_stress_level')
+        }));
+    
+        return res.status(200).json(data);
+      } catch (error) {
+        console.error('Error al obtener el promedio de estrés por día de la empresa:', error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+      }
+    }
+    
 }
 
 export default new UserEstresSessionController();
