@@ -16,4 +16,8 @@ export class EstresNiveles extends Model {
   @Column(DataType.TEXT)
   descripcion!: string;
 
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  cantidad!: number;
+
 }
