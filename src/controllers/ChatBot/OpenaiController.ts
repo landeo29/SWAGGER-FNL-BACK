@@ -144,6 +144,7 @@ class OpenaiController {
       - Contener técnicas realizables sin necesidad de elementos externos.
       - Incluir un mínimo de 15 pasos detallados y fáciles de seguir.
       - Cuando te dirigas al usuario usa la palabra 'USER'
+      - Estas actividades deben poder ser realizadas en 5 a 10 minutos y en un espacio de trabajo como una oficina, evita actividades que requieran de un espacio amplio.
 
     **Formato de respuesta**: Devuelve estrictamente un JSON válido, sin saltos de línea, \`\`\`, ni texto adicional, listo para ser procesado. Usa el siguiente formato como plantilla:
 

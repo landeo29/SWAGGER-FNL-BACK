@@ -278,6 +278,7 @@ class UserProgramaController {
         user_id: user_id,
         activity_id: activity.id,
         dia: index + 1, // Día del 1 al 21
+        start_date: index + 1 === 1 ? new Date() : null,
       }));
 
       // Registrar las actividades en UserPrograma
@@ -457,7 +458,7 @@ class UserProgramaController {
             completed_date: programa.completed_date
 
       }));
-      res.status(200).json({ respuesta }); // Responder con los datos de ambas tablas
+      res.status(200).json({ userProgramas:respuesta }); // Responder con los datos de ambas tablas
     } catch (error: any) {
       console.error("Error al obtener los programas de usuario:", error);
       res.status(500).json({
