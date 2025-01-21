@@ -1,5 +1,6 @@
 import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, Length, Model, Table } from "sequelize-typescript";
 import { User } from "../User/user";
+import { Activitys } from "./Activitys";
 
 @Table({
   timestamps: false,
@@ -19,21 +20,13 @@ export class UserPrograma extends Model {
   @Column(DataType.INTEGER)
   dia!: number;
 
+  @ForeignKey(() => Activitys)
   @AllowNull(false)
-  @Column(DataType.STRING)
-  nombre_tecnica!: string;
+  @Column(DataType.INTEGER)
+  activity_id!: number;
 
-  @AllowNull(false)
-  @Column(DataType.STRING)
-  tipo_tecnica!: string;
-
-  @AllowNull(false)
-  @Column(DataType.TEXT)
-  descripcion!: string;
-
-  @AllowNull(false)
-  @Column(DataType.TEXT)
-  guia!: string;
+  @BelongsTo(() => Activitys)
+  activity!: Activitys;
 
   @AllowNull(true)
   @Column(DataType.TEXT)
