@@ -30,10 +30,11 @@ class UserEstresSessionController{
         const { user_id, estres_nivel_id } = req.body;
     try {
 
-        console.log(req.body)
+
         // Busca si ya existe una sesión de estrés para el usuario
         const existingSession = await UserEstresSession.findOne({ where: { user_id } });
 
+        //Se verifica si el estres es diferente a Leve
         if (estres_nivel_id != 1){
           const estresNivel = await EstresNiveles.findOne({
             where: { id: estres_nivel_id }
@@ -44,7 +45,8 @@ class UserEstresSessionController{
             res.status(500).json({ message: 'Error del servidor.' });
             return
           }
-
+          
+          //Se Suma en 1 a la cantidad contenida o se le asigna 1 en caso sea nulo
           const nuevaCantidad = estresNivel.cantidad ? estresNivel.cantidad + 1 : 1;
           await estresNivel.update({ cantidad: nuevaCantidad });
         }
