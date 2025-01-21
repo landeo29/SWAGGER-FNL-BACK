@@ -5,6 +5,8 @@ import axios from "axios";
 import { UserPrograma } from "../../models/Program/userprograma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ChatMessage } from "../../interfaces/ChatMessage";
+import { Activitys } from "../../models/Program/Activitys";
+import { ActivityTags } from "../../models/Program/ActivityTags";
 
 class OpenaiController {
   countTokens(text: string) {
@@ -26,38 +28,41 @@ class OpenaiController {
     const generationConfig = {
       responseMimeType: "application/json",
     };
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", generationConfig });
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      generationConfig,
+    });
 
     const rangos = [
       {
         min: "1",
         max: "3",
-        tipotecnica:"Tecnicas de Relajacion"
+        tipotecnica: "Tecnicas de Relajacion",
       },
       {
         min: "4",
         max: "7",
-        tipotecnica:"Tecnicas de Relajacion"
+        tipotecnica: "Tecnicas de Relajacion",
       },
       {
         min: "8",
         max: "10",
-        tipotecnica:" Reestructuracion Cognitiva"
+        tipotecnica: "Reestructuracion Cognitiva",
       },
       {
         min: "11",
         max: "14",
-        tipotecnica:"Reestructuracion Cognitiva"
+        tipotecnica: "Reestructuracion Cognitiva",
       },
       {
         min: "15",
         max: "18",
-        tipotecnica:"Técnicas de Programación Neurolingüística"
+        tipotecnica: "Técnicas de Programación Neurolingüística",
       },
       {
         min: "19",
         max: "21",
-        tipotecnica:"Técnicas de Programación Neurolingüística"
+        tipotecnica: "Técnicas de Programación Neurolingüística",
       },
     ];
     for (const element of rangos) {
@@ -123,6 +128,72 @@ class OpenaiController {
           intentos++;
         }
       }
+    }
+  };
+  generateActivitys = async (tags: any, cant: number) => {
+    try {
+      const formattedTags = JSON.stringify(tags, null, 2);
+      const prompt = `
+    Genera ${cant} actividades técnicas psicológicas diseñadas para reducir el estrés laboral. Usa la información proporcionada a continuación para crear actividades efectivas:
+
+    - **Tags relacionados**:
+      ${formattedTags}
+
+    - **Requisitos para la actividad**:
+      - Debe ser gradual y compatible con las actividades cotidianas del usuario.
+      - Contener técnicas realizables sin necesidad de elementos externos.
+      - Incluir un mínimo de 15 pasos detallados y fáciles de seguir.
+      - Cuando te dirigas al usuario usa la palabra 'USER'
+
+    **Formato de respuesta**: Devuelve estrictamente un JSON válido, sin saltos de línea, \`\`\`, ni texto adicional, listo para ser procesado. Usa el siguiente formato como plantilla:
+
+    [
+      {
+        "nombre_tecnica": "Nombre de la técnica",
+        "tipo_tecnica": "Subtítulo breve de la técnica",
+        "descripcion": "Motiva al usuario usando su nombre y explica claramente la técnica.",
+        "guia": [
+          "Paso 1: Descripción del paso...",
+          "Paso 2: Descripción del paso...",
+          "...",
+          "Paso 15: Descripción del paso..."
+        ]
+      }
+    ]`;
+      const apiKey = process.env.GEMINI_API_KEY ?? "";
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const generationConfig = {
+        responseMimeType: "application/json",
+      };
+      const model = genAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
+        generationConfig,
+      });
+      const result = await model.generateContent(prompt);
+      const resultJSON = JSON.parse(result.response.text());
+      const registros = await Activitys.bulkCreate(
+        resultJSON.map((item: any) => ({
+          nombre_tecnica: item.nombre_tecnica,
+          tipo_tecnica: item.tipo_tecnica,
+          descripcion: item.descripcion,
+          guia: JSON.stringify(item.guia),
+        }))
+      );
+      const activityTags: { activity_id: number; tags_id: number }[] = [];
+      registros.forEach((activity) => {
+        tags.forEach((tag: any) => {
+          activityTags.push({
+            activity_id: activity.id, // ID de la actividad creada
+            tags_id: tag.id, // ID del tag
+          });
+        });
+      });
+      console.log(activityTags);
+      await ActivityTags.bulkCreate(activityTags);
+      return { cant, prompt, resultado: resultJSON };
+    } catch (error) {
+      console.error(error);
+      return { error: error };
     }
   };
   generatePrograms = async (
@@ -597,7 +668,7 @@ class OpenaiController {
 
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      
+
       const generationConfig = {
         temperature: 1,
         topP: 0.95,
@@ -607,7 +678,7 @@ class OpenaiController {
       };
       const model = genAI.getGenerativeModel({
         model: "gemini-2.0-flash-exp",
-        generationConfig
+        generationConfig,
       });
       const result = await model.generateContent(prompt);
 
@@ -658,18 +729,15 @@ class OpenaiController {
 
       const messages = await Message.findAll({
         where: {
-          [Op.or]: [
-            { user_id: userId },
-            { user_id_receptor: userId },
-          ],
+          [Op.or]: [{ user_id: userId }, { user_id_receptor: userId }],
         },
-        
+
         offset: 2,
       });
       console.log(messages);
       console.log("lenght: ", messages.length);
-      let chatHistory: ChatMessage[] =[];
-      if(messages.length !== 0){
+      let chatHistory: ChatMessage[] = [];
+      if (messages.length !== 0) {
         console.log("entra xd");
         chatHistory = messages.map((msg) => ({
           role: msg.user_id === userId ? "user" : "model",
@@ -709,7 +777,7 @@ class OpenaiController {
         model: "gemini-2.0-flash-exp",
         systemInstruction: systemMessage,
       });
-      console.log("aqui antes de crear chat")
+      console.log("aqui antes de crear chat");
       const chat = model.startChat({
         history: chatHistory.length > 0 ? chatHistory : undefined,
         generationConfig: {
@@ -717,15 +785,16 @@ class OpenaiController {
           temperature: 0.5,
         },
       });
-      console.log("aqui despues de crear chat")
+      console.log("aqui despues de crear chat");
       const result = await chat.sendMessage(prompt);
-      console.log(result)
-      if(!result) return res.status(500).json({message: "error al consultar Gemini"})
+      console.log(result);
+      if (!result)
+        return res.status(500).json({ message: "error al consultar Gemini" });
       const responseGemini = result.response.text();
       console.log(responseGemini);
 
       const analisis = await this.analyzeMessageWithGemini(prompt);
-      
+
       await Message.bulkCreate([
         {
           content: prompt,
@@ -739,7 +808,7 @@ class OpenaiController {
         {
           content: responseGemini,
           user_id: 1,
-          user_id_receptor: userId,// Incrementar 1 ms
+          user_id_receptor: userId, // Incrementar 1 ms
         },
       ]);
       return res.status(201).json({

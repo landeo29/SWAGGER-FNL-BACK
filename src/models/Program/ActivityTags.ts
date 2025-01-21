@@ -1,5 +1,5 @@
 import { AllowNull, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
-import { Activitys } from "./activitys";
+import { Activitys } from "./Activitys";
 import { Tags } from "./Tags";
 
 @Table({

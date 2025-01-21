@@ -1,6 +1,6 @@
 import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, Length, Model, Table } from "sequelize-typescript";
 import { User } from "../User/user";
-import { Activitys } from "./activitys";
+import { Activitys } from "./Activitys";
 
 @Table({
   timestamps: false,

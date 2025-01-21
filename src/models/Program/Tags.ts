@@ -1,6 +1,6 @@
 import { AllowNull, BelongsToMany, Model, Table } from "sequelize-typescript";
 import { Column, DataType } from "sequelize-typescript";
-import { Activitys } from "./activitys";
+import { Activitys } from "./Activitys";
 import { ActivityTags } from "./ActivityTags";
 
 @Table({
@@ -13,7 +13,7 @@ export class Tags extends Model {
 
     @AllowNull(true)
     @Column(DataType.STRING)
-    description!: string;
+    tipo!: string;
 
     @BelongsToMany(() => Activitys, () => ActivityTags)
     tags!: Activitys[];

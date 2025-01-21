@@ -135,7 +135,7 @@ UserProgramaRouter.get('/user/:user_id', userprogramacontroller.getByUserId);
  *        '422':
  *          description: Error de validacion.
  */
-UserProgramaRouter.post('/report/:user_id', userprogramacontroller.createAndGenerateReport);
+UserProgramaRouter.post('/report/:user_id', userprogramacontroller.asignacionActivitys);
 
 /**
  * Post track
@@ -197,5 +197,6 @@ UserProgramaRouter.post('/getprogramcompleto/:user_id', userprogramacontroller.g
  */
 UserProgramaRouter.put('/:user_id/:id', userprogramacontroller.updateByUserAndTecnica);
 
+UserProgramaRouter.post('/generateActivitys', userprogramacontroller.generar);
 
 export default UserProgramaRouter;
