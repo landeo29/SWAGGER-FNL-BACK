@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const userController_1 = __importDefault(require("../controllers/User/userController"));
+const uploadMiddleware_1 = __importDefault(require("../middlewares/uploadMiddleware"));
 const UserRoutes = (0, express_1.Router)();
 // Rutas de usuario
 /**
@@ -13,7 +14,7 @@ const UserRoutes = (0, express_1.Router)();
  * /login:
  *    post:
  *      tags:
- *        - users
+ *        - Users
  *      summary: "Logear Usuario"
  *      description: Este endpoint es para Logear al Usuario
  *      requestBody:
@@ -26,8 +27,6 @@ const UserRoutes = (0, express_1.Router)();
  *          description: Retorna el Token
  *        '422':
  *          description: Error de validacion.
- *      security:
- *       - bearerAuth: []
  */
 UserRoutes.post('/login', userController_1.default.login);
 /**
@@ -36,7 +35,7 @@ UserRoutes.post('/login', userController_1.default.login);
  * /register:
  *    post:
  *      tags:
- *        - users
+ *        - Users
  *      summary: "Registrar Usuario"
  *      description: Este endpoint es para Registrar al Usuario
  *      requestBody:
@@ -49,21 +48,16 @@ UserRoutes.post('/login', userController_1.default.login);
  *          description: Retorna el Token
  *        '422':
  *          description: Error de validacion.
- *      security:
- *       - bearerAuth: []
  */
 UserRoutes.post('/register', userController_1.default.createUser);
 // Rutas sin middleware de token
-//UserRoutes.get('/users', userController.getAllUsers);
-//UserRoutes.put('/users/:id', userController.updateUser);
-//UserRoutes.get('/datos/users/:id', userController.getUserById);\
 /**
  * Post track
  * @openapi
  * /users:
  *    get:
  *      tags:
- *        - users
+ *        - Users
  *      summary: "Perfil del Usuario"
  *      description: Este endpoint es para obtener los datos para el Perfil
  *      responses:
@@ -71,9 +65,80 @@ UserRoutes.post('/register', userController_1.default.createUser);
  *          description: Retorna los Datos del Perfil
  *        '422':
  *          description: Error de validacion.
- *      security:
- *       - bearerAuth: []
+ */
+UserRoutes.get('/users', userController_1.default.getAllUsers);
+/**
+ * Post track
+ * @openapi
+ * /users/{userId}:
+ *    put:
+ *      tags:
+ *        - Users
+ *      summary: "Actualizar datos del Usuario"
+ *      description: Este endpoint es para actualizar datos del Usuario
+ *      responses:
+ *        '200':
+ *          description: Retorna confirmacion y datos actualizados del Usuario
+ *        '422':
+ *          description: Error de validacion.
+ */
+UserRoutes.put('/users/:id', userController_1.default.updateUser);
+/**
+ * Post track
+ * @openapi
+ * /datos/users/{userId}:
+ *    get:
+ *      tags:
+ *        - Users
+ *      summary: "Datos del Usuario"
+ *      description: Este endpoint es para obtener los datos del Usuario
+ *      responses:
+ *        '200':
+ *          description: Retorna los Datos del Usuario
+ *        '422':
+ *          description: Error de validacion.
+ */
+UserRoutes.get('/datos/users/:id', userController_1.default.getUserById);
+/**
+ * Post track
+ * @openapi
+ * /perfilUsuario/{userId}:
+ *    get:
+ *      tags:
+ *        - Users
+ *      summary: "Perfil del Usuario"
+ *      description: Este endpoint es para obtener los datos para el Perfil
+ *      responses:
+ *        '200':
+ *          description: Retorna los Datos del Perfil
+ *        '422':
+ *          description: Error de validacion.
  */
 UserRoutes.get('/perfilUsuario/:id', userController_1.default.getUserProfile);
-//UserRoutes.post('/actualizarPerfil/:id', upload, userController.updateProfile);
+/**
+ * Post track
+ * @openapi
+ * /actualizarPerfil/{userId}:
+ *    post:
+ *      tags:
+ *        - Users
+ *      summary: "Actualizar Perfil del Usuario"
+ *      description: Este endpoint es para actualizar los datos para el Perfil
+ *      parameters:
+ *        - name: userId
+ *          in: path
+ *          description: ID del usuario necesario
+ *          required: true
+ *      requestBody:
+ *          content:
+ *            application/octet-stream:
+ *              schema:
+ *                $ref: "#/components/schemas/userProfile"
+ *      responses:
+ *        '200':
+ *          description: Retorna los Datos nuevos del Perfil
+ *        '422':
+ *          description: Error de validacion.
+ */
+UserRoutes.post('/actualizarPerfil/:id', uploadMiddleware_1.default, userController_1.default.updateProfile);
 exports.default = UserRoutes;

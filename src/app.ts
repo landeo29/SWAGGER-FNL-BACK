@@ -15,6 +15,10 @@ import UserEstresSesionRoutes from "./routes/userestressesion.routes";
 import UserProgramaRouter from "./routes/userprograma.routes";
 //import TipoTecnicasRoutes from "./routes/tipotecnicas.routes";
 import TestEstresSalidaRoutes from "./routes/testEstresSalida.routes";
+import MetricasRouter from "./routes/metricas.routes";
+import EmpresaRouter from "./routes/empresa.routes";
+import role_router from "./routes/user.roles";
+
 class App {
   private server: Application;
   constructor() {
@@ -49,6 +53,9 @@ class App {
     this.server.use("/api", UserResponseRoutes);
     this.server.use("/api/userprograma", UserProgramaRouter);
     this.server.use("/api", TestEstresSalidaRoutes); //cambiar ruta
+    this.server.use("/api/metricas", MetricasRouter);
+    this.server.use("/api/empresa", EmpresaRouter);
+    this.server.use("/api", role_router);
     //this.server.use("/api", TipoTecnicasRoutes);
   }
   public getServer(): Application {

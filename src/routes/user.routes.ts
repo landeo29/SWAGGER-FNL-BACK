@@ -1,7 +1,11 @@
 import {Router} from "express"
 import UserController from "../controllers/User/userController";
+
+import  { upload_xlsx ,upload} from "../middlewares/uploadMiddleware";
+
 import upload from "../middlewares/uploadMiddleware";
 import { Authorization } from "../middlewares/authMiddleware";
+
 
 const UserRoutes = Router();
 // Rutas de usuario
@@ -49,6 +53,8 @@ UserRoutes.post('/login', UserController.login);
  *          description: Error de validacion.
  */
 UserRoutes.post('/register', UserController.createUser);
+
+UserRoutes.post('/register/bulk', upload_xlsx.single("file"),UserController.registerBulk);
 
 // Rutas sin middleware de token
 

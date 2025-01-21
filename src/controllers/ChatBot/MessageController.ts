@@ -50,11 +50,11 @@ class MessageController {
       const messages = await Message.findAll({
         where: {
           [Op.or]: [
-            { user_id: userId, user_id_receptor: 1 },
-            { user_id: 1, user_id_receptor: userId },
+            { user_id: userId },
+            { user_id_receptor: userId },
           ],
         },
-        order: [["created_at", "DESC"]],
+        order: [["id", "DESC"]],
         limit,
         offset,
       });

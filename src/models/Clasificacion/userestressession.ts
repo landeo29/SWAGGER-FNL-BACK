@@ -1,4 +1,4 @@
-import { AllowNull, BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
+import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, Model, Table } from "sequelize-typescript";
 import { User } from "../User/user";
 import { EstresNiveles } from "./estres_niveles";
 
@@ -22,4 +22,8 @@ export class UserEstresSession extends Model {
 
   @BelongsTo(() => EstresNiveles)
   estres_nivel!: EstresNiveles; 
+
+  @Default(DataType.NOW)
+  @Column(DataType.DATE)
+  created_at!: Date;
 }

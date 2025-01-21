@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
 });
 
 // Crear un middleware de multer para manejar el archivo
-const upload = multer({ storage: storage }).single('profileImage'); // 'profileImage' es el nombre del campo en el formulario
+export const upload = multer({ storage: storage }).single('profileImage'); // 'profileImage' es el nombre del campo en el formulario
 
-export default upload;
+export const upload_xlsx = multer({ dest: "uploads/" });
 

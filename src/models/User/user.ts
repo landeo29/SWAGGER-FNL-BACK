@@ -7,7 +7,6 @@ import {
   Unique,
   Default,
   IsEmail,
-  CreatedAt,
   ForeignKey,
   BelongsTo,
   HasOne,
@@ -15,9 +14,10 @@ import {
 import { UserEstresSession } from "../Clasificacion/userestressession";
 import { UserResponses } from "./user_responses";
 import { Empresas } from "../Global/empresas";
+import { Role } from "../User/role"; 
 
 @Table({
-  timestamps:false,
+  timestamps: false,
   tableName: "users"
 })
 export class User extends Model {
@@ -47,7 +47,6 @@ export class User extends Model {
   @Column(DataType.INTEGER)
   funcyinteract!: number;
 
-  
   @AllowNull(true)
   @Column(DataType.STRING)
   profileImage!: string;
@@ -62,7 +61,9 @@ export class User extends Model {
   @Column(DataType.BOOLEAN)
   testestresbool!: boolean;
 
-  @CreatedAt
+  @AllowNull(true)
+  @Default(DataType.NOW)
+  @Column(DataType.DATE)
   createdAt!: Date;
 
   @HasOne(() => UserEstresSession)
@@ -74,8 +75,16 @@ export class User extends Model {
   @ForeignKey(() => Empresas)
   @AllowNull(true)
   @Column(DataType.INTEGER)
-  empresa_id!: Empresas;
+  empresa_id!: number;
 
   @BelongsTo(() => Empresas)
   empresa!: Empresas;
+
+  @ForeignKey(() => Role) 
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  role_id!: number; 
+
+  @BelongsTo(() => Role) 
+  role!: Role;
 }

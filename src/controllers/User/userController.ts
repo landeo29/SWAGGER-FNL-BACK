@@ -5,8 +5,14 @@ import path from "path";
 import fs from "fs";
 import { UserResponses } from "../../models/User/user_responses";
 import { Hierarchical_level } from "../../models/User/hierarchical_level";
+
+import { readFile, utils } from "xlsx";
+import { generarPassword } from "../../utils/utils";
 import { Op } from "sequelize";
+import { emailQueue } from "../../services/EmailQueue";
+
 import { UserEstresSession } from "../../models/Clasificacion/userestressession";
+
 
 class UserController {
   async login(req: any, res: any) {
@@ -39,6 +45,8 @@ class UserController {
         permisopoliticas: user.permisopoliticas,
         userresponsebool: user.userresponsebool,
         testestresbool: user.testestresbool,
+        id_empresa: user.empresa_id,
+        role_id: user.role_id, 
       });
     } catch (error) {
       console.error("Error en el login:", error);
@@ -47,40 +55,35 @@ class UserController {
   }
 
   async createUser(req: any, res: any) {
-    const { username, password, email, empresa_id } = req.body;
-    const file = req.file; // Ahora usamos req.file, ya que es un solo archivo
+    const { username, password, email, empresa_id, role_id } = req.body;
+    const file = req.file;
 
     try {
-      // Validaciones básicas
-      if (!username || !password || !email) {
+      if (!username || !password || !email || !role_id) {
         return res
           .status(400)
           .json({ error: "Todos los campos son obligatorios" });
       }
 
-      // Manejo de la imagen
       let profileImagePath = null;
       if (file) {
         const uploadDir = path.join(__dirname, "../imagenes");
         if (!fs.existsSync(uploadDir)) {
           fs.mkdirSync(uploadDir, { recursive: true });
         }
-        //nunca estaba siendo usado
-        //const fileName = `${Date.now()}-${file.filename}`;
         profileImagePath = `/imagenes/${file.filename}`;
       }
 
-      // Encriptar contraseña
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Crear usuario
       const user = await User.create({
         username,
         password: hashedPassword,
         email,
         profileImage: profileImagePath,
         created_at: new Date(),
-        empresa_id
+        empresa_id,
+        role_id,
       });
 
       res
@@ -92,13 +95,12 @@ class UserController {
     }
   }
 
-  // Obtener perfil de usuario
   async getUserProfile(req: any, res: any) {
     try {
       const userProfile = await UserResponses.findOne({
         where: { user_id: req.params.id },
         include: [
-          { model: User, attributes: ["email", "profileImage"] },
+          { model: User, attributes: ["email", "profileImage", "empresa_id", "role_id"] }, 
           { model: Hierarchical_level, attributes: ["level"] },
         ],
       });
@@ -112,6 +114,8 @@ class UserController {
         hierarchicalLevel: userProfile.hierarchical_level.level,
         gender_id: userProfile.gender_id,
         profileImage: userProfile.user.profileImage,
+        id_empresa: userProfile.user.empresa_id,
+        role_id: userProfile.user.role_id, 
       };
 
       return res.json(response);
@@ -123,7 +127,7 @@ class UserController {
 
   async updateProfile(req: any, res: any) {
     const { id } = req.params;
-    const { username, email } = req.body;
+    const { username, email, role_id } = req.body;
 
     try {
       const user = await User.findByPk(id);
@@ -133,12 +137,11 @@ class UserController {
 
       if (username) user.username = username;
       if (email) user.email = email;
+      if (role_id) user.role_id = role_id; 
 
-      // Verifica si hay una nueva imagen
       if (req.file) {
-        //const uploadDir = path.join(__dirname, '../imagenes');
-        const newProfileImagePath = `/imagenes/${req.file.filename}`; // Usar el nombre del archivo generado por multer
-        user.profileImage = newProfileImagePath; // Actualiza la ruta de la imagen en el modelo
+        const newProfileImagePath = `/imagenes/${req.file.filename}`;
+        user.profileImage = newProfileImagePath;
       }
 
       await user.save();
@@ -151,7 +154,6 @@ class UserController {
     }
   }
 
-  // Obtener todos los usuarios
   async getAllUsers(_req: any, res: any) {
     try {
       const users = await User.findAll();
@@ -162,7 +164,6 @@ class UserController {
     }
   }
 
-  // Actualizar un usuario
   async updateUser(req: any, res: any) {
     const { id } = req.params;
     const {
@@ -173,6 +174,7 @@ class UserController {
       funcyinteract,
       userresponsebool,
       testestresbool,
+      role_id,
     } = req.body;
 
     try {
@@ -184,21 +186,22 @@ class UserController {
 
       if (username) user.username = username;
       if (email) user.email = email;
-      if (password) user.password = await bcrypt.hash(password, 10); // Encriptar la nueva contraseña
+      if (password) user.password = await bcrypt.hash(password, 10);
       if (permisopoliticas !== undefined)
         user.permisopoliticas = permisopoliticas;
       if (funcyinteract !== undefined) user.funcyinteract = funcyinteract;
 
       if (userresponsebool !== undefined) {
-        // Convertir booleano a TINYINT(1) (1 o 0)
         user.userresponsebool =
-          userresponsebool === true || userresponsebool === "true" ? true : false;
+          userresponsebool === true || userresponsebool === "true";
       }
 
       if (testestresbool !== undefined) {
         user.testestresbool =
-          testestresbool === true || testestresbool === "true" ? true : false;
+          testestresbool === true || testestresbool === "true";
       }
+
+      if (role_id) user.role_id = role_id;
 
       await user.save();
 
@@ -211,7 +214,6 @@ class UserController {
     }
   }
 
-  // Obtener un usuario por ID
   async getUserById(req: any, res: any) {
     const { id } = req.params;
 
@@ -226,6 +228,107 @@ class UserController {
       res.status(500).json({ error: "Error interno del servidor" });
     }
   }
+
+
+  async registerBulk(req: any,res: any){
+    try {
+      const { empresa_id } = req.query;
+      if (!req.file) {
+          return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Leer el archivo subido
+      const filePath = req.file.path;
+      const workbook = readFile(filePath);
+      const sheetName = workbook.SheetNames[0]; // Seleccionar la primera hoja
+      const sheetData = utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+      const cant_user = await User.count({where: empresa_id}) //cantidad de usuarios que tiene actualmente
+
+      //validar la cantidad maxima de usuarios a registrar
+      const MAX_USERS = 50 - cant_user;
+
+      if (sheetData.length > MAX_USERS) {
+          return res.status(400).json({
+              message: `Solo puede registrar ${MAX_USERS}, el archivo contiene más de ${MAX_USERS} usuarios. Por favor, reduzca la cantidad.`,
+          });
+      }
+
+      // Filtrar las columnas necesarias
+      const extractedData = await Promise.all(
+        sheetData.map(async (row: any) => {
+            const password = generarPassword(8); // Generar password
+            const hashedPassword = await bcrypt.hash(password, 10); // Encriptar password
+            return {
+                username: row.username || row.Username,
+                email: row.email || row.Email,
+                password, // Guardar password plano
+                hashedPassword, // Guardar password encriptado
+                empresa_id,
+            };
+        })
+    );
+
+      const uniqueUsernames = new Set();
+      const uniqueEmails = new Set();
+      const duplicatesInFile = extractedData.filter((item) => {
+        const isDuplicate = uniqueUsernames.has(item.username) || uniqueEmails.has(item.email);
+        uniqueUsernames.add(item.username);
+        uniqueEmails.add(item.email);
+        return isDuplicate;
+      });
+
+      if (duplicatesInFile.length > 0) {
+        return res.status(400).json({
+          message: "Hay usuarios o correos duplicados en el archivo.",
+          duplicatesInFile,
+        });
+      }
+
+      const usernames = extractedData.map((item) => item.username);
+      const emails = extractedData.map((item) => item.email);
+
+      const usuariosExistentes = await User.findAll({
+        where: {
+            [Op.or]: [
+                { username: { [Op.in]: usernames } },
+                { email: { [Op.in]: emails } },
+            ],
+        },
+      });
+
+      if (usuariosExistentes.length > 0) {
+        const duplicatesInDb = usuariosExistentes.map((usuario) => ({
+            username: usuario.username,
+            email: usuario.email,
+        }));
+
+        return res.status(400).json({
+            message: "Hay usuarios o correos que ya existen en la base de datos.",
+            duplicatesInDb,
+        });
+      }
+      await User.bulkCreate( extractedData.map(({password, ...rest}) => ({
+        ...rest,
+        password: rest.hashedPassword
+      })));
+
+      extractedData.forEach((user) => {
+        console.log("enviado a bull")
+        emailQueue.add({
+          email: user.email,
+          subject: "Bienvenido a FNL",
+          body: `Tu cuenta es: ${user.email} ,Tu password es: ${user.password}`
+        }, { attempts: 3 })
+      })
+
+      return res.status(200).json({ message: `${extractedData.length} Usuarios registrados exitosamente.` });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error processing file", error });
+    }
+  }
+  
 
   async listCompanyUsers(req: any, res: any) {
     try {
@@ -307,5 +410,6 @@ class UserController {
       });
     }
   }
+
 }
 export default new UserController();

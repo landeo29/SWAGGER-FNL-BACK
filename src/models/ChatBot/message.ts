@@ -4,6 +4,7 @@ import {
   BelongsTo,
   Column,
   DataType,
+  Default,
   ForeignKey,
   Model,
   Table,
@@ -50,6 +51,7 @@ export class Message extends Model {
   message_length!: number;
 
   @AllowNull(true)
+  @Default(DataType.NOW)
   @Column(DataType.DATE)
   created_at!: Date;
 }

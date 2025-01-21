@@ -9,6 +9,19 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const path_1 = __importDefault(require("path"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swagger_1 = __importDefault(require("./config/swagger"));
+const messages_routes_1 = __importDefault(require("./routes/messages.routes"));
+const user_routes_1 = __importDefault(require("./routes/user.routes"));
+const openai_routes_1 = __importDefault(require("./routes/openai.routes"));
+const maintance_routes_1 = __importDefault(require("./routes/maintance.routes"));
+const userResponse_routes_1 = __importDefault(require("./routes/userResponse.routes"));
+const testEstres_routes_1 = __importDefault(require("./routes/testEstres.routes"));
+const estresNiveles_routes_1 = __importDefault(require("./routes/estresNiveles.routes"));
+const userestressesion_routes_1 = __importDefault(require("./routes/userestressesion.routes"));
+const userprograma_routes_1 = __importDefault(require("./routes/userprograma.routes"));
+//import TipoTecnicasRoutes from "./routes/tipotecnicas.routes";
+const testEstresSalida_routes_1 = __importDefault(require("./routes/testEstresSalida.routes"));
+const metricas_routes_1 = __importDefault(require("./routes/metricas.routes"));
+const empresa_routes_1 = __importDefault(require("./routes/empresa.routes"));
 class App {
     constructor() {
         this.server = (0, express_1.default)();
@@ -27,19 +40,19 @@ class App {
     }
     routes() {
         // Configuración de rutas
-        //this.server.use("/api", messagesRouter);
-        //this.server.use("/api", usersRouter);
-        //this.server.use("/api", openaiRouter);
-        //this.server.use("/api", activityRouter);
-        //this.server.use("/api/v1/maintance", maintanceRouter);
-        //this.server.use("/api", userResponseRoutes);
-        //this.server.use("/api", testEstresRoutes);
-        //this.server.use("/api", estresNiveles);
-        //this.server.use("/api", userEstresSession);
-        //this.server.use("/api", userPrograma);
-        //this.server.use("/api", estresTecnicas);
-        //this.server.use("/api", tipoTecnicas);
-        //this.server.use("/api", testEstresSalidaRoutes);
+        this.server.use("/api", user_routes_1.default);
+        this.server.use("/api/v1/maintance", maintance_routes_1.default);
+        this.server.use("/api", testEstres_routes_1.default);
+        this.server.use("/api", messages_routes_1.default);
+        this.server.use("/api", openai_routes_1.default);
+        this.server.use("/api", estresNiveles_routes_1.default);
+        this.server.use("/api", userestressesion_routes_1.default);
+        this.server.use("/api", userResponse_routes_1.default);
+        this.server.use("/api/userprograma", userprograma_routes_1.default);
+        this.server.use("/api", testEstresSalida_routes_1.default); //cambiar ruta
+        this.server.use("/api/metricas", metricas_routes_1.default);
+        this.server.use("/api/empresa", empresa_routes_1.default);
+        //this.server.use("/api", TipoTecnicasRoutes);
     }
     getServer() {
         return this.server;
