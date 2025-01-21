@@ -23,7 +23,6 @@ class UserController {
         where: { username },
         include: [{ model: Role, as: 'role' }]
       });
-      console.log(user);
       if (!user) {
         return res.status(401).json({ error: "Credenciales inválidas" });
       }
