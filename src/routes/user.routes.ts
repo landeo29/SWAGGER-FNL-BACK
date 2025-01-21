@@ -1,6 +1,11 @@
 import {Router} from "express"
 import UserController from "../controllers/User/userController";
+
 import  { upload_xlsx ,upload} from "../middlewares/uploadMiddleware";
+
+import upload from "../middlewares/uploadMiddleware";
+import { Authorization } from "../middlewares/authMiddleware";
+
 
 const UserRoutes = Router();
 // Rutas de usuario
@@ -147,5 +152,22 @@ UserRoutes.get('/perfilUsuario/:id', UserController.getUserProfile);
  *          description: Error de validacion.
  */
 UserRoutes.post('/actualizarPerfil/:id', upload, UserController.updateProfile);
+
+/**
+ * Post track
+ * @openapi
+ * /users/empresa:
+ *    get:
+ *      tags:
+ *        - Users
+ *      summary: "Obtener todos los Usuarios por la empresa del administrador"
+ *      description: Este endpoint es para obtener todos los Usuarios por empresa
+ *      responses:
+ *        '200':
+ *          description: Retorna los Usuarios
+ *        '422':
+ *          description: Error de validacion.
+ */
+UserRoutes.get('/users/empresa', Authorization,UserController.listCompanyUsers);
 
 export default UserRoutes;
