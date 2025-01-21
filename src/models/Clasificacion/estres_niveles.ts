@@ -1,5 +1,6 @@
 
-import { AllowNull, Column, DataType, Length, Model, Table } from "sequelize-typescript";
+import { AllowNull, Column, DataType, HasMany, Length, Model, Table } from "sequelize-typescript";
+import { UserEstresSession } from "./userestressession";
 
 
 @Table({
@@ -16,8 +17,10 @@ export class EstresNiveles extends Model {
   @Column(DataType.TEXT)
   descripcion!: string;
 
+  @HasMany(() => UserEstresSession)
+  userEstresSessions!: UserEstresSession[];
+
   @AllowNull(true)
   @Column(DataType.INTEGER)
   cantidad!: number;
-
 }

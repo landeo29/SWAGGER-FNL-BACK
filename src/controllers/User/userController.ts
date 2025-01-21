@@ -12,47 +12,52 @@ import { Op } from "sequelize";
 import { emailQueue } from "../../services/EmailQueue";
 
 import { UserEstresSession } from "../../models/Clasificacion/userestressession";
+import { Role } from "../../models/User/role";
 
 
 class UserController {
   async login(req: any, res: any) {
     const { username, password } = req.body;
     try {
-      const user = await User.findOne({ where: { username } });
-
+      const user = await User.findOne({
+        where: { username },
+        include: [{ model: Role, as: 'role' }]
+      });
       if (!user) {
         return res.status(401).json({ error: "Credenciales inválidas" });
       }
-
+      if (!user.role) {
+        return res.status(403).json({ error: "El usuario no tiene un rol asignado" });
+      }
       const isMatch = await bcrypt.compare(password, user.password);
-
       if (!isMatch) {
         return res.status(401).json({ error: "Credenciales inválidas" });
       }
+  
       const jwt_secret = process.env.JWT_SECRET || "";
       const token = jwt.sign(
-        { userId: user.id, username: user.username },
+        { userId: user.id, username: user.username, role: user.role.name },
         jwt_secret,
         { expiresIn: "1h" }
       );
-
+  
       return res.status(200).json({
         message: "Login exitoso",
         token,
         userId: user.id,
         username: user.username,
         email: user.email,
+        role: user.role.name,
         permisopoliticas: user.permisopoliticas,
         userresponsebool: user.userresponsebool,
         testestresbool: user.testestresbool,
         id_empresa: user.empresa_id,
-        role_id: user.role_id, 
       });
     } catch (error) {
-      console.error("Error en el login:", error);
       res.status(500).json({ error: "Error interno del servidor" });
     }
   }
+  
 
   async createUser(req: any, res: any) {
     const { username, password, email, empresa_id, role_id } = req.body;

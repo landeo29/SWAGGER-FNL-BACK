@@ -1,9 +1,7 @@
 import {Router} from "express"
 import UserController from "../controllers/User/userController";
 
-import  { upload_xlsx ,upload} from "../middlewares/uploadMiddleware";
-
-import upload from "../middlewares/uploadMiddleware";
+import  { upload_xlsx, upload } from "../middlewares/uploadMiddleware";
 import { Authorization } from "../middlewares/authMiddleware";
 
 
