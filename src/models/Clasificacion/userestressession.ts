@@ -26,4 +26,5 @@ export class UserEstresSession extends Model {
   @Default(DataType.NOW)
   @Column(DataType.DATE)
   created_at!: Date;
+
 }
