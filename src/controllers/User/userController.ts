@@ -54,7 +54,8 @@ class UserController {
         permisopoliticas: user.permisopoliticas,
         userresponsebool: user.userresponsebool,
         testestresbool: user.testestresbool,
-        id_empresa: user.empresa.nombre,
+        id_empresa: user.empresa_id,
+        nombre_empresa: user.empresa.nombre
       });
     } catch (error) {
       res.status(500).json({ error: "Error interno del servidor" });
