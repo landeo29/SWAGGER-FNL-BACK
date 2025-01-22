@@ -7,6 +7,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ChatMessage } from "../../interfaces/ChatMessage";
 import { Activitys } from "../../models/Program/Activitys";
 import { ActivityTags } from "../../models/Program/ActivityTags";
+import { getKeyGemini } from "../../config/KeysGemini";
 
 class OpenaiController {
   countTokens(text: string) {
@@ -23,7 +24,7 @@ class OpenaiController {
     estres_nivel: string,
     resumenRespuestas: string
   ) => {
-    const apiKey = process.env.GEMINI_API_KEY ?? "";
+    const apiKey = getKeyGemini();
     const genAI = new GoogleGenerativeAI(apiKey);
     const generationConfig = {
       responseMimeType: "application/json",
@@ -161,7 +162,7 @@ class OpenaiController {
         ]
       }
     ]`;
-      const apiKey = process.env.GEMINI_API_KEY ?? "";
+      const apiKey = getKeyGemini();
       const genAI = new GoogleGenerativeAI(apiKey);
       const generationConfig = {
         responseMimeType: "application/json",
@@ -654,7 +655,7 @@ class OpenaiController {
     }
   };
   analyzeMessageWithGemini = async (mensaje: any) => {
-    const apiKey = process.env.GEMINI_API_KEY ?? "";
+    const apiKey = getKeyGemini();
 
     const prompt = `
     Analiza el siguiente mensaje, de parte de los usuarios de nuestra app para ayuda psicológica en el trabajo:
@@ -715,7 +716,7 @@ class OpenaiController {
   };
   chat = async (req: any, res: any) => {
     const { prompt, userId } = req.body;
-    const apiKey = process.env.GEMINI_API_KEY ?? "";
+    const apiKey = getKeyGemini();
     const genAI = new GoogleGenerativeAI(apiKey);
 
     try {
@@ -735,85 +736,120 @@ class OpenaiController {
 
         offset: 2,
       });
-      console.log(messages);
-      console.log("lenght: ", messages.length);
       let chatHistory: ChatMessage[] = [];
       if (messages.length !== 0) {
-        console.log("entra xd");
         chatHistory = messages.map((msg) => ({
           role: msg.user_id === userId ? "user" : "model",
           parts: [{ text: msg.content }],
         }));
       }
       const systemMessage = `
-          Tu nombre es Funcy, un asistente de IA especializado en apoyo psicológico y bienestar emocional. Tu propósito es ofrecer orientación comprensiva y práctica a ${username}, quien puede estar enfrentando estrés laboral o emocional. 
-      
-          **Instrucciones Clave**:
-      
-          1. **Escucha Activa**: Comienza cada interacción validando las emociones y experiencias de ${username}. Usa frases como "Entiendo que esto puede ser difícil para ti".
-      
-          2. **Diagnóstico Situacional**: Pregunta de manera clara y específica sobre la situación actual del usuario. Usa preguntas abiertas para comprender su contexto y preocupaciones: 
-             - "¿Qué aspectos de tu trabajo te están causando más estrés en este momento?"
-             - "¿Puedes compartir más sobre lo que te está preocupando?"
-      
-          3. **Técnicas Psicológicas Avanzadas**: Ofrece técnicas basadas en evidencia, como:
-             - **Reestructuración Cognitiva**: Ayuda a identificar y desafiar pensamientos negativos. Ejemplo: "¿Has considerado cómo tus pensamientos pueden estar influyendo en tu estrés? Vamos a explorar eso juntos".
-             - **Técnicas de Regulación Emocional**: Propón métodos como la identificación de emociones y su regulación. Ejemplo: "Reconocer tus emociones es el primer paso para gestionarlas. ¿Qué emociones estás sintiendo ahora mismo?"
-      
-          4. **Acciones Concretas**: Brinda recomendaciones claras y específicas que el usuario pueda implementar. Por ejemplo:
-             - "Dedica unos minutos a escribir tus pensamientos sobre la situación. Esto puede ayudarte a clarificar tus sentimientos".
-             - "Considera establecer límites claros en el trabajo. ¿Cómo podrías hacerlo en tu caso?"
-      
-          5. **Fomento de la Resiliencia**: Ofrece estrategias para desarrollar habilidades de afrontamiento. Por ejemplo:
-             - "Practicar el autocuidado regular es vital. ¿Qué actividades disfrutas que podrían ayudarte a relajarte y recuperar energías?"
-      
-          6. **Seguimiento y Apoyo Continuo**: Cierra cada sesión con un recordatorio de que estás ahí para apoyarlo. Por ejemplo:
-             - "Recuerda que puedes volver aquí siempre que necesites hablar. Estoy aquí para ayudarte en este proceso."
-      
-          Evita sugerencias superficiales o generales. Cada respuesta debe ser rica en contenido, relevante y orientada a la acción, asegurando que ${username} sienta que está recibiendo apoyo práctico y emocional de calidad.
-          Importante, si el mensaje del usuario no está relacionado con tus facultados (ayuda psicológica) entonces deberás responder que no estás habilitado para responder mensajes que no estén relacionados al apoyo psicológico y bienestar emocional.
-        `;
+      Tu nombre es Funcy, un asistente de IA especializado en apoyo psicológico y bienestar emocional. Tu propósito es ofrecer orientación comprensiva y práctica a ${username}, quien puede estar enfrentando estrés laboral o emocional.
 
+**Instrucciones Clave:**
+
+1. **Escucha Activa:** Valida las emociones y experiencias del usuario. Ej: "Entiendo que esto puede ser difícil para ti".
+2. **Diagnóstico Situacional:** Pregunta sobre la situación actual del usuario. Ej: "¿Qué aspectos de tu trabajo te están causando más estrés?".
+3. **Técnicas Psicológicas:** Ofrece técnicas basadas en evidencia como reestructuración cognitiva y regulación emocional.
+4. **Acciones Concretas:** Brinda recomendaciones prácticas. Ej: "Dedica unos minutos a escribir tus pensamientos".
+5. **Fomento de la Resiliencia:** Ofrece estrategias para desarrollar habilidades de afrontamiento. Ej: "Practicar el autocuidado regular es vital".
+6. **Seguimiento y Apoyo Continuo:** Cierra cada sesión con un recordatorio de tu apoyo.
+
+**Análisis Detallado:**
+
+* **Sentimiento:** Identifica el sentimiento expresado (Positivo, Negativo, Neutral).
+* **Factor Psicosocial:** Identifica factores como: Carga de trabajo, Falta de control y autonomia, Ambigüedad y conflicto de roles, Inseguridad laboral, Relaciones interpersonales conflictivas, Estilo de liderazgo inadecuado, Falta de reconocimiento y recompensa, Jornadas y horarios laborales excesivos o irregulares, Condiciones físicas y ambientales inadecuadas, Desequilibrio trabajo-vida personal, Causas externas, Ninguno .
+* **Personalización:** Adapta el lenguaje y el contenido a las características del usuario.
+
+**Estructura del JSON:**
+{
+    "respuesta": "...",
+    "analisis": {
+        "sentimiento": "Positivo" | "Negativo" | "Neutral",
+        "factor_psicosocial": "Carga de trabajo" | "Falta de control y autonomia" | "Ambigüedad y conflicto de roles" | "Inseguridad laboral" | "Relaciones interpersonales conflictivas" | "Estilo de liderazgo inadecuado" | "Falta de reconocimiento y recompensa" | "Jornadas y horarios laborales excesivos o irregulares" | "Condiciones físicas y ambientales inadecuadas" | "Desequilibrio trabajo-vida personal" | "Causas externas" | "Ninguno",
+    }
+}
+
+**Modo de Respuesta:** Responde en formato JSON estrictamente válido, siguiendo la estructura anterior.
+
+**Consideraciones Adicionales:**
+
+* **Contexto:** Ten en cuenta el contexto de la conversación para proporcionar respuestas más relevantes.
+* **Empatía:** Muestra empatía y comprensión hacia los sentimientos del usuario.
+* **Confidencialidad:** Respeta la privacidad del usuario y evita compartir información personal.
+* **Limitaciones:** Indica claramente tus limitaciones como un asistente de IA.
+
+**Ejemplo de Interacción:**
+
+**Usuario:** Me siento muy estresado en el trabajo. Mi jefe me exige demasiado y no tengo tiempo para nada más.
+
+**Funcy:** Entiendo que te sientas así. El estrés laboral puede ser muy agobiante. ¿Puedes contarme más sobre las tareas que te generan más estrés? 
+
+**Respuesta en JSON:**
+{
+    "respuesta": "Entiendo que te sientas así. El estrés laboral puede ser muy agobiante. ¿Puedes contarme más sobre las tareas que te generan más estrés?",
+    "analisis": {
+        "sentimiento": "Negativo",
+        "factor_psicosocial": "Carga de trabajo",
+    }
+}
+          `;
+      const generationConfig = {
+        responseMimeType: "application/json",
+        maxOutputTokens: 1500,
+        temperature: 0.5,
+      };
       const model = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash-exp",
+        model: "gemini-1.5-flash-8b",
         systemInstruction: systemMessage,
       });
-      console.log("aqui antes de crear chat");
+      console.log(chatHistory);
       const chat = model.startChat({
         history: chatHistory.length > 0 ? chatHistory : undefined,
-        generationConfig: {
-          maxOutputTokens: 1500,
-          temperature: 0.5,
-        },
+        generationConfig
       });
-      console.log("aqui despues de crear chat");
-      const result = await chat.sendMessage(prompt);
-      console.log(result);
-      if (!result)
-        return res.status(500).json({ message: "error al consultar Gemini" });
-      const responseGemini = result.response.text();
-      console.log(responseGemini);
 
-      const analisis = await this.analyzeMessageWithGemini(prompt);
+      const result = await chat.sendMessage(prompt);
+
+      if (!result) return res.status(500).json({ message: "error al consultar Gemini" });
+      const responseGemini = result.response.text();
+      const reponseJSON = JSON.parse(responseGemini);
+      
+      //const analisis = await this.analyzeMessageWithGemini(prompt);
+      let score = 0;
+      switch (reponseJSON.analisis.sentimiento) {
+        case "Negativo":
+          score = -1;
+          break;
+        case "Positivo":
+          score = 1;
+          break;
+        default: //Neutral
+          score = 0;
+          break;
+      };
+      const message_length = prompt.length;
 
       await Message.bulkCreate([
         {
           content: prompt,
           user_id: userId,
           user_id_receptor: 1,
-          score: analisis.score,
-          message_length: analisis.message_length,
-          factor_psicosocial: analisis.factor_psicosocial,
-          sentimientos: analisis.sentimiento,
+          score,
+          message_length,
+          factor_psicosocial: reponseJSON.analisis.factor_psicosocial,
+          sentimientos: reponseJSON.analisis.sentimiento,
         },
         {
-          content: responseGemini,
+          content: reponseJSON.respuesta,
           user_id: 1,
           user_id_receptor: userId, // Incrementar 1 ms
         },
       ]);
       return res.status(201).json({
-        response: responseGemini,
+        response: reponseJSON.respuesta,
+        apikey: apiKey,
+        respuesta: reponseJSON
       });
 
       //chatHistory.push({ role: "user", parts:[{text:prompt}] });

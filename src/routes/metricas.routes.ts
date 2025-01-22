@@ -24,5 +24,5 @@ MetricasRouter.get("/EmpleadosEstressPorcentaje", metricasController.EmpleadosEs
 
 MetricasRouter.get("/UsanFuncyHoy", metricasController.EmpleadosUsaronFuncy);
 
-
+MetricasRouter.get("/CausasEstres/:userId", metricasController.CausaEstres);
 export default MetricasRouter;
