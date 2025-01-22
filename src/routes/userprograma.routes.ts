@@ -197,7 +197,6 @@ UserProgramaRouter.post('/getprogramcompleto/:user_id', userprogramacontroller.g
  */
 UserProgramaRouter.put('/:user_id/:id', userprogramacontroller.updateByUserAndTecnica);
 
-<<<<<<< HEAD
 /**
  * Post track
  * @openapi
@@ -223,8 +222,4 @@ UserProgramaRouter.put('/:user_id/:id', userprogramacontroller.updateByUserAndTe
  *          description: Error de validacion.
  */
 UserProgramaRouter.get('/estrellas/:userId', userprogramacontroller.getStars);
-=======
-UserProgramaRouter.post('/generateActivitys', userprogramacontroller.generar);
-
->>>>>>> 4ffeaade64933846f28b615f1406531cfddd9e99
 export default UserProgramaRouter;
