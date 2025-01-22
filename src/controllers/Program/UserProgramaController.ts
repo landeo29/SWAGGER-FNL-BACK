@@ -9,13 +9,9 @@ import { ResponsabilityLevel } from "../../models/User/responsabilityLevel";
 import { Gender } from "../../models/User/gender";
 import { Hierarchical_level } from "../../models/User/hierarchical_level";
 import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
-<<<<<<< HEAD
 import { Op } from "sequelize";
-=======
 import { Tags } from "../../models/Program/Tags";
-import { Op } from "sequelize";
 import { Activitys } from "../../models/Program/Activitys";
->>>>>>> 4ffeaade64933846f28b615f1406531cfddd9e99
 
 class UserProgramaController {
   respuestaMap: Record<string, string>;
