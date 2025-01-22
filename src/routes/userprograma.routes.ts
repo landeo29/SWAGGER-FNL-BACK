@@ -197,6 +197,8 @@ UserProgramaRouter.post('/getprogramcompleto/:user_id', userprogramacontroller.g
  */
 UserProgramaRouter.put('/:user_id/:id', userprogramacontroller.updateByUserAndTecnica);
 
+UserProgramaRouter.post('/generateActivitys', userprogramacontroller.generar);
+
 /**
  * Post track
  * @openapi
