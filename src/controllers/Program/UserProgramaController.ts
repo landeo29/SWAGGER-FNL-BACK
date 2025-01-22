@@ -9,8 +9,8 @@ import { ResponsabilityLevel } from "../../models/User/responsabilityLevel";
 import { Gender } from "../../models/User/gender";
 import { Hierarchical_level } from "../../models/User/hierarchical_level";
 import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
-import { Op } from "sequelize";
 import { Tags } from "../../models/Program/Tags";
+import { Op } from "sequelize";
 import { Activitys } from "../../models/Program/Activitys";
 
 class UserProgramaController {
