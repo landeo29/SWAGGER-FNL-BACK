@@ -13,6 +13,7 @@ import { emailQueue } from "../../services/EmailQueue";
 
 import { UserEstresSession } from "../../models/Clasificacion/userestressession";
 import { Role } from "../../models/User/role";
+import { Empresas } from "../../models/Global/empresas";
 
 
 class UserController {
@@ -21,7 +22,9 @@ class UserController {
     try {
       const user = await User.findOne({
         where: { username },
-        include: [{ model: Role, as: 'role' }]
+        include: [{ model: Role, as: 'role' },
+          {model: Empresas, as: 'empresa' }
+        ]
       });
       if (!user) {
         return res.status(401).json({ error: "Credenciales inválidas" });
@@ -51,7 +54,7 @@ class UserController {
         permisopoliticas: user.permisopoliticas,
         userresponsebool: user.userresponsebool,
         testestresbool: user.testestresbool,
-        id_empresa: user.empresa_id,
+        id_empresa: user.empresa.nombre,
       });
     } catch (error) {
       res.status(500).json({ error: "Error interno del servidor" });
