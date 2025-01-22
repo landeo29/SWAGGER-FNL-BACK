@@ -1,4 +1,5 @@
-import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, Model, Table } from "sequelize-typescript";
+import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, Model, Table, Length } from "sequelize-typescript";
+
 import { User } from "../User/user";
 import { EstresNiveles } from "./estres_niveles";
 
@@ -9,11 +10,16 @@ import { EstresNiveles } from "./estres_niveles";
 export class UserEstresSession extends Model {
   @ForeignKey(() => User)
   @AllowNull(false)
-  @Column(DataType.INTEGER)
+  @Column(DataType.INTEGER) 
   user_id!: number;
 
   @BelongsTo(() => User)
   user!: User;
+
+  @AllowNull(true)
+  @Length({min: 1, max:5})
+  @Column(DataType.INTEGER)
+  caritas!: number
 
   @ForeignKey(() => EstresNiveles)
   @AllowNull(false)
@@ -22,6 +28,7 @@ export class UserEstresSession extends Model {
 
   @BelongsTo(() => EstresNiveles)
   estres_nivel!: EstresNiveles; 
+
 
   @Default(DataType.NOW)
   @Column(DataType.DATE)

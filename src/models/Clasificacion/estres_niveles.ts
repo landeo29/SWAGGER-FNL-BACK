@@ -19,4 +19,8 @@ export class EstresNiveles extends Model {
 
   @HasMany(() => UserEstresSession)
   userEstresSessions!: UserEstresSession[];
+
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  cantidad!: number;
 }
