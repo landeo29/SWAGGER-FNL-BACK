@@ -199,4 +199,29 @@ UserProgramaRouter.put('/:user_id/:id', userprogramacontroller.updateByUserAndTe
 
 UserProgramaRouter.post('/generateActivitys', userprogramacontroller.generar);
 
+/**
+ * Post track
+ * @openapi
+ * /userprograma/{user_id}/{id}:
+ *    delete:
+ *      tags:
+ *        - UserPrograma
+ *      summary: "Eliminar User Programa"
+ *      description: Este endpoint para eliminar un User Programa, se necesita el ID
+ *      parameters: 
+ *        - name: user_id
+ *          in: path
+ *          description: ID del User Programa
+ *          required: true
+ *        - name: id
+ *          in: path
+ *          description: ID del User Programa
+ *          required: true
+ *      responses:
+ *        '200':
+ *          description: Retorna mensaje de confirmacion.
+ *        '422':
+ *          description: Error de validacion.
+ */
+UserProgramaRouter.get('/estrellas/:userId', userprogramacontroller.getStars);
 export default UserProgramaRouter;

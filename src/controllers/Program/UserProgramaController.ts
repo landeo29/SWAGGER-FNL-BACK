@@ -548,5 +548,23 @@ class UserProgramaController {
         .json({ error: "Error al eliminar el programa de usuario" });
     }
   }
+  async getStars(req: any, res: any) {
+    const userId = req.params.userId;
+    try {
+      const completedActivities = await UserPrograma.findAll({
+        where: {
+          user_id: userId, 
+          completed_date: { [Op.ne]: null }, 
+        },
+        attributes: ['completed_date','estrellas', ],
+        order: [['estrellas', 'DESC']], 
+      });
+  
+      return res.status(200).json(completedActivities); 
+    } catch (error) {
+      console.error('Error al obtener actividades completadas:', error);
+      return res.status(500).json({ error: 'Error al obtener actividades completadas' }); 
+    }
+  }
 }
 export default UserProgramaController;
