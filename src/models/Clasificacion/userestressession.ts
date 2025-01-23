@@ -17,7 +17,7 @@ export class UserEstresSession extends Model {
   user!: User;
 
   @AllowNull(true)
-  @Length({min: 1, max:5})
+  @Length({min: 1, max:3})
   @Column(DataType.INTEGER)
   caritas!: number
 
