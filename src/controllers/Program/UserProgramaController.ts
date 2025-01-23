@@ -134,7 +134,7 @@ class UserProgramaController {
       const gender = user?.userresponses.gender.gender || "Desconocido";
 
       const respuesta = this.generarTextorespuestas(data);
-
+      
       await OpenaiController.generateProgramsWithGemini(
         user_id,
         user.username,

@@ -64,5 +64,26 @@ class MetricasController {
     });
     return res.status(200).json({ cant: cantidadMensajes });
   }
+  async CausaEstres(req:any,res:any){
+    const { userId } = req.params;
+    const mensajes = await Message.findAll({
+      where: {
+        user_id: userId
+      },
+      attributes: ["factor_psicosocial"]
+    })
+    const repetidos: Record<string, number> = {};
+    mensajes.forEach((mensaje) => {
+        const factor = mensaje.factor_psicosocial;
+        repetidos[factor] = (repetidos[factor] || 0) + 1;
+    });
+
+    // Convierte el objeto de conteo en un array de objetos
+    const causas = Object.keys(repetidos).map((factor) => ({
+        causa: factor,
+        count: repetidos[factor],
+    }));
+    return res.status(200).json(causas);
+  }
 }
 export default MetricasController;

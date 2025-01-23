@@ -5,15 +5,17 @@ import path from "path";
 import fs from "fs";
 import { UserResponses } from "../../models/User/user_responses";
 import { Hierarchical_level } from "../../models/User/hierarchical_level";
-
+import { AgeRange } from "../../models/User/ageRange";
+import Sequelize from "sequelize";
 import { readFile, utils } from "xlsx";
 import { generarPassword } from "../../utils/utils";
 import { Op } from "sequelize";
 import { emailQueue } from "../../services/EmailQueue";
-
+import { Message } from "../../models/ChatBot/message";
 import { UserEstresSession } from "../../models/Clasificacion/userestressession";
 import { Role } from "../../models/User/role";
 import { Empresas } from "../../models/Global/empresas";
+import { Gender } from "../../models/User/gender";
 
 
 class UserController {
@@ -111,20 +113,51 @@ class UserController {
         include: [
           { model: User, attributes: ["email", "profileImage", "empresa_id", "role_id"] }, 
           { model: Hierarchical_level, attributes: ["level"] },
+          {model: AgeRange, attributes: ['age_range'],},
+          {model: Gender, attributes: ['gender'],},
         ],
       });
+
+      const userEstres = await UserEstresSession.findOne({
+        where: {
+          user_id: req.params.id 
+        },
+        attributes: ["estres_nivel_id"],
+      })
+
+      const messageUserDates = await Message.findAll({
+        where: { user_id: req.params.id }, // Filtrar por user_id
+        attributes: [
+          [Sequelize.fn('DATE', Sequelize.col('created_at')), 'unique_date'], // Extraer solo la fecha
+        ],
+        group: [Sequelize.fn('DATE', Sequelize.col('created_at'))], // Agrupar por fecha
+        order: [[Sequelize.fn('DATE', Sequelize.col('created_at')), 'ASC']], // Ordenar las fechas de forma ascendente
+      });
+
 
       if (!userProfile) {
         return res.status(404).json({ error: "Usuario no encontrado" });
       }
 
+      if (!userEstres) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+
+      const now = new Date();
+      const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      const dias_no_usados = endDate.getDate() - messageUserDates.length 
+
       const response = {
         email: userProfile.user.email,
         hierarchicalLevel: userProfile.hierarchical_level.level,
-        gender_id: userProfile.gender_id,
+        age_range: userProfile.age_range.age_range,
+        gender: userProfile.gender.gender,
         profileImage: userProfile.user.profileImage,
         id_empresa: userProfile.user.empresa_id,
         role_id: userProfile.user.role_id, 
+        nivel_estres: userEstres?.estres_nivel_id,
+        dias_usados: messageUserDates.length,
+        dias_no_usados: dias_no_usados
       };
 
       return res.json(response);
