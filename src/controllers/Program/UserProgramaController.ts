@@ -397,6 +397,11 @@ class UserProgramaController {
         return res.status(404).json({ error: "Usuario no encontrado" });
       }
 
+      if (caritas !== undefined) {
+        userEstresSession.caritas = caritas === 3 ? 1 : caritas === 1 ? 3 : caritas;
+      }
+  
+
       // Actualizar los campos comentario y estrellas si se pasan en el body
       userPrograma.comentario = comentario || userPrograma.comentario;
       userEstresSession.caritas = caritas !== undefined ? caritas : userEstresSession.caritas;
