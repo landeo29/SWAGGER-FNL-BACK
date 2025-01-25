@@ -63,7 +63,7 @@ UserEstresSesionRoutes.post('/userestresessions/assign', UserEstresSessionContro
  *    get:
  *      tags:
  *        - User Estres Sessions
- *      summary: "Grafica de nivel de estres del usuario"
+ *      summary: "Grafica de nivel de estres del usuario por dia"
  *      description: Este endpoint es para obtener la grafica de nivel de estres del usuario
  *      parameters: 
  *        - name: userId
@@ -87,6 +87,8 @@ UserEstresSesionRoutes.get('/userestresessions/:userId/grafica', UserEstresSessi
  *        - User Estres Sessions
  *      summary: "Promedio de estres de la empresa por dia"
  *      description: Este endpoint es para obtener el promedio de estres de la empresa por dia
+ *      security:
+ *        - bearerAuth: []
  *      responses:
  *        '200':
  *          description: Retorna el promedio de estres de la empresa por dia
