@@ -6,12 +6,14 @@ import database from "../../config/database";
 import { Message } from "../../models/ChatBot/message";
 import { Op } from "sequelize";
 import { endOfDay, startOfDay } from "date-fns";
+import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
 //import moment from "moment";
 
 class MetricasController {
   async TotalEmpleados(req: any, res: any) {
     try {
-      const { empresa_id } = req.body;
+
+      const empresa_id = req.params.empresa_id;
       const cant = await User.count({
         where: {
           empresa_id,
@@ -26,7 +28,7 @@ class MetricasController {
   }
   async EmpleadosEstressPorcentaje(req: any, res: any) {
     try {
-      const { empresa_id } = req.body;
+      const empresa_id = req.params.empresa_id;
       const connection = database.getConnection();
       if (!connection) {
         return res
@@ -65,7 +67,7 @@ class MetricasController {
     return res.status(200).json({ cant: cantidadMensajes });
   }
   async CausaEstres(req:any,res:any){
-    const { userId } = req.params;
+    const userId = req.params.userId;
     const mensajes = await Message.findAll({
       where: {
         user_id: userId
@@ -85,5 +87,21 @@ class MetricasController {
     }));
     return res.status(200).json(causas);
   }
+  
+  async TotalEmplEstres(_req:any,res:any){
+
+    const nivestres = await EstresNiveles.findAll({
+      attributes: ["nombre", "cantidad"],
+    })
+
+    const response = nivestres.map((nivel) => ({
+      nivel: nivel.nombre,
+      cantidad: nivel.cantidad,
+    }));
+
+    return res.status(200).json(response);
+  }
 }
+
+
 export default MetricasController;

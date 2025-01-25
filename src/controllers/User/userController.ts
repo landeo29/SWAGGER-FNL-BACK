@@ -111,7 +111,7 @@ class UserController {
       const userProfile = await UserResponses.findOne({
         where: { user_id: req.params.id },
         include: [
-          { model: User, attributes: ["email", "profileImage", "empresa_id", "role_id"] }, 
+          { model: User, attributes: ["username", "email", "profileImage", "empresa_id", "role_id"] }, 
           { model: Hierarchical_level, attributes: ["level"] },
           {model: AgeRange, attributes: ['age_range'],},
           {model: Gender, attributes: ['gender'],},
@@ -148,6 +148,7 @@ class UserController {
       const dias_no_usados = endDate.getDate() - messageUserDates.length 
 
       const response = {
+        username: userProfile.user.username,
         email: userProfile.user.email,
         hierarchicalLevel: userProfile.hierarchical_level.level,
         age_range: userProfile.age_range.age_range,
