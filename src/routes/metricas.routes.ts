@@ -18,11 +18,13 @@ const metricasController = new MetricasController();
  *        '422':
  *          description: Error de validacion.
  */
-MetricasRouter.get("/total_empleados", metricasController.TotalEmpleados);
+MetricasRouter.get("/total_empleados/:empresa_id", metricasController.TotalEmpleados);
 
-MetricasRouter.get("/EmpleadosEstressPorcentaje", metricasController.EmpleadosEstressPorcentaje);
+MetricasRouter.get("/EmpleadosEstressPorcentaje/:empresa_id", metricasController.EmpleadosEstressPorcentaje);
 
 MetricasRouter.get("/UsanFuncyHoy", metricasController.EmpleadosUsaronFuncy);
 
+MetricasRouter.get("/CausasEstres/:userId", metricasController.CausaEstres);
 
+MetricasRouter.get("/total_empl_estres/", metricasController.TotalEmplEstres);
 export default MetricasRouter;

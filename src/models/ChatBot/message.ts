@@ -44,9 +44,6 @@ export class Message extends Model {
   @Column(DataType.INTEGER)
   score!: number;
 
-  @Column(DataType.TEXT)
-  keyword_frequency!: string;
-
   @Column(DataType.INTEGER)
   message_length!: number;
 

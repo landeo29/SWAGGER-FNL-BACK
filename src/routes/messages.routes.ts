@@ -106,4 +106,22 @@ MessagesRoutes.post('/guardarMensaje', MessageController.saveMessage);
  */
 MessagesRoutes.post('/guardarMensajeFromBot', MessageController.saveMessageFromBot);
 
+
+/**
+ * Post track
+ * @openapi
+ * /getstatsfuncy:
+ *    get:
+ *      tags:
+ *        - Messages
+ *      summary: "Obtener estadisticas de uso de funcy"
+ *      description: Este endpoint es para obtener los dias de uso y no uso de funcy
+ *      responses:
+ *        '200':
+ *          description: Retorna un json con las stadisticas
+ *        '500':
+ *          description: Error al obtener la informacion.
+ */
+MessagesRoutes.get('/getstatsfuncy', MessageController.getStatsFuncy);
+
 export default MessagesRoutes;

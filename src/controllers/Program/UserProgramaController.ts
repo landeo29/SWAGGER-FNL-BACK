@@ -134,7 +134,7 @@ class UserProgramaController {
       const gender = user?.userresponses.gender.gender || "Desconocido";
 
       const respuesta = this.generarTextorespuestas(data);
-
+      
       await OpenaiController.generateProgramsWithGemini(
         user_id,
         user.username,
@@ -397,12 +397,20 @@ class UserProgramaController {
         return res.status(404).json({ error: "Usuario no encontrado" });
       }
 
+
+      if (caritas === 3) {
+            userEstresSession.caritas = 1; // Cambiar carita feliz a carita triste
+        } else if (caritas === 1) {
+            userEstresSession.caritas = 3; // Cambiar carita triste a carita feliz
+        } else {
+            userEstresSession.caritas = caritas; // Si no es 1 ni 3, asignar el valor directamente
+        }
+
       // Actualizar los campos comentario y estrellas si se pasan en el body
       userPrograma.comentario = comentario || userPrograma.comentario;
-      userEstresSession.caritas = caritas !== undefined ? caritas : userEstresSession.caritas;
       userPrograma.estrellas = estrellas !== undefined ? estrellas : userPrograma.estrellas;
 
-
+ 
       // Guardar los cambios en la base de datos
       if (userPrograma.completed_date == null)
         userPrograma.completed_date = new Date();
