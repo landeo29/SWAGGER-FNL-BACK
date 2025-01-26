@@ -16,6 +16,7 @@ import { Role } from "./User/role";
 import { Tags } from "./Program/Tags";
 import { Activitys } from "./Program/Activitys";
 import { ActivityTags } from "./Program/ActivityTags";
+import { Imagenes } from "./Program/Imagenes";
 
 const models = [
   User,
@@ -35,5 +36,6 @@ const models = [
   ActivityTags,
   UserPrograma,
   Role,
+  Imagenes,
 ];
 export default models;

@@ -1,7 +1,8 @@
-import { AllowNull, BelongsToMany, Model, Table } from "sequelize-typescript";
+import { AllowNull, BelongsToMany, HasMany, Model, Table } from "sequelize-typescript";
 import { Column, DataType } from "sequelize-typescript";
 import { Activitys } from "./Activitys";
 import { ActivityTags } from "./ActivityTags";
+import { Imagenes } from "./Imagenes";
 
 @Table({
     tableName: "tags"
@@ -17,4 +18,7 @@ export class Tags extends Model {
 
     @BelongsToMany(() => Activitys, () => ActivityTags)
     tags!: Activitys[];
+
+    @HasMany(() => Imagenes)
+    imagen!: Imagenes;
 }

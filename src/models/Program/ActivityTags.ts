@@ -16,4 +16,5 @@ export class ActivityTags extends Model{
     @AllowNull(false)
     @Column(DataType.INTEGER)
     tags_id!: number;
+    tag: any;
 }

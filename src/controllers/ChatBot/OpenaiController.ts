@@ -8,6 +8,7 @@ import { ChatMessage } from "../../interfaces/ChatMessage";
 import { Activitys } from "../../models/Program/Activitys";
 import { ActivityTags } from "../../models/Program/ActivityTags";
 import { getKeyGemini } from "../../config/KeysGemini";
+import { Imagenes } from "../../models/Program/Imagenes";
 
 class OpenaiController {
   countTokens(text: string) {
@@ -135,33 +136,34 @@ class OpenaiController {
     try {
       const formattedTags = JSON.stringify(tags, null, 2);
       const prompt = `
-    Genera ${cant} actividades técnicas psicológicas diseñadas para reducir el estrés laboral. Usa la información proporcionada a continuación para crear actividades efectivas:
-
-    - **Tags relacionados**:
-      ${formattedTags}
-
-    - **Requisitos para la actividad**:
-      - Debe ser gradual y compatible con las actividades cotidianas del usuario.
-      - Contener técnicas realizables sin necesidad de elementos externos.
-      - Incluir un mínimo de 15 pasos detallados y fáciles de seguir.
-      - Cuando te dirigas al usuario usa la palabra 'USER'
-      - Estas actividades deben poder ser realizadas en 5 a 10 minutos y en un espacio de trabajo como una oficina, evita actividades que requieran de un espacio amplio.
-
-    **Formato de respuesta**: Devuelve estrictamente un JSON válido, sin saltos de línea, \`\`\`, ni texto adicional, listo para ser procesado. Usa el siguiente formato como plantilla:
-
-    [
-      {
-        "nombre_tecnica": "Nombre de la técnica",
-        "tipo_tecnica": "Subtítulo breve de la técnica",
-        "descripcion": "Motiva al usuario usando su nombre y explica claramente la técnica.",
-        "guia": [
-          "Paso 1: Descripción del paso...",
-          "Paso 2: Descripción del paso...",
-          "...",
-          "Paso 15: Descripción del paso..."
-        ]
-      }
-    ]`;
+      Genera ${cant} actividades técnicas psicológicas diseñadas para reducir el estrés laboral. Usa la información proporcionada a continuación para crear actividades efectivas:
+  
+      - **Tags relacionados**:
+        ${formattedTags}
+  
+      - **Requisitos para la actividad**:
+        - Debe ser gradual y compatible con las actividades cotidianas del usuario.
+        - Contener técnicas realizables sin necesidad de elementos externos.
+        - Incluir un mínimo de 15 pasos detallados y fáciles de seguir.
+        - Cuando te dirigas al usuario usa la palabra 'USER'
+        - Estas actividades deben poder ser realizadas en 5 a 10 minutos y en un espacio de trabajo como una oficina, evita actividades que requieran de un espacio amplio.
+  
+      **Formato de respuesta**: Devuelve estrictamente un JSON válido, sin saltos de línea, \`\`\`, ni texto adicional, listo para ser procesado. Usa el siguiente formato como plantilla:
+  
+      [
+        {
+          "nombre_tecnica": "Nombre de la técnica",
+          "tipo_tecnica": "Subtítulo breve de la técnica",
+          "descripcion": "Motiva al usuario usando su nombre y explica claramente la técnica.",
+          "guia": [
+            "Paso 1: Descripción del paso...",
+            "Paso 2: Descripción del paso...",
+            "...",
+            "Paso 15: Descripción del paso..."
+          ]
+        }
+      ]`;
+  
       const apiKey = getKeyGemini();
       const genAI = new GoogleGenerativeAI(apiKey);
       const generationConfig = {
@@ -173,6 +175,7 @@ class OpenaiController {
       });
       const result = await model.generateContent(prompt);
       const resultJSON = JSON.parse(result.response.text());
+
       const registros = await Activitys.bulkCreate(
         resultJSON.map((item: any) => ({
           nombre_tecnica: item.nombre_tecnica,
@@ -181,23 +184,52 @@ class OpenaiController {
           guia: JSON.stringify(item.guia),
         }))
       );
+  
       const activityTags: { activity_id: number; tags_id: number }[] = [];
-      registros.forEach((activity) => {
+      const imageUrls: { activity_id: number; imagen_url: string }[] = [];
+
+      const filteredTags = tags.filter((tag: any) => tag.tipo === "Tipo Tecnica");
+      const tagIds = filteredTags.map((tag: any) => tag.id);
+      const images = await Imagenes.findAll({
+        where: { tags_id: tagIds },
+        order: [["id", "ASC"]],
+      });
+
+      registros.forEach((activity, index) => {
         tags.forEach((tag: any) => {
           activityTags.push({
-            activity_id: activity.id, // ID de la actividad creada
-            tags_id: tag.id, // ID del tag
+            activity_id: activity.id,
+            tags_id: tag.id,
           });
+  
+          const tagImages = images.filter((image) => image.tags_id === tag.id);
+          if (tagImages.length > 0) {
+            const imageIndex = index % tagImages.length;
+            imageUrls.push({
+              activity_id: activity.id,
+              imagen_url: tagImages[imageIndex].url,
+            });
+          }
         });
       });
-      console.log(activityTags);
+
+      for (const imageUrl of imageUrls) {
+        await Activitys.update(
+          { imagen_url: imageUrl.imagen_url },
+          { where: { id: imageUrl.activity_id } }
+        );
+      }
+  
       await ActivityTags.bulkCreate(activityTags);
+  
       return { cant, prompt, resultado: resultJSON };
     } catch (error) {
       console.error(error);
       return { error: error };
     }
   };
+  
+  
   generatePrograms = async (
     user_id: number,
     username: string,
