@@ -37,6 +37,7 @@ Este proyecto es un backend desarrollado para FNL en Node.js utilizando TypeScri
     - DB_PORT=3306
     - EMAIL=paulyeffertperezsanjinez@gmail.com
     - EMAIL_PASSWORD=""
+    - ALTER=true #true si construyes por primera vez cambia a false despues
 
 2. **Levanta los servicios en el entorno de desarrollo**:
 
