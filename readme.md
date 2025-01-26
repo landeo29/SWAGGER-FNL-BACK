@@ -21,8 +21,8 @@ Este proyecto es un backend desarrollado para FNL en Node.js utilizando TypeScri
 1. **Clona este repositorio**:
 
    ```bash
-   git clone <URL_DEL_REPOSITORIO>
-   cd <NOMBRE_DEL_REPOSITORIO>
+   git clone https://github.com/PaulPPS632/SWAGGER-FNL-BACK.git
+   cd SWAGGER-FNL-BACK
 
 1. **Crea un .env con los siguientes datos**:
 
