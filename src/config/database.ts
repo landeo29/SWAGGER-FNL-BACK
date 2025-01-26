@@ -13,12 +13,20 @@ class Database {
   init() {
     try {
       const name = process.env.DB_NAME || 'chat_app2'
-      console.log(name)
+      
       const user = process.env.DB_USER || 'root'
       const password = process.env.DB_PASSWORD || ''
       const host = process.env.DB_HOST || 'localhost'
       const dialect = (process.env.DB_DIALECT as Dialect) || 'mysql'
       const port = parseInt(process.env.DB_PORT || '3306')
+      console.log("Detalles de la conexión:", {
+        database: name,
+        user: user,
+        host: host,
+        dialect: dialect,
+        port: port,
+        password: password
+      })
       this.connection = new Sequelize(
         name,
         user,
@@ -40,9 +48,9 @@ class Database {
       // Autenticar la conexión
       await this.connection?.authenticate();
       console.log("Conexión a la base de datos establecida correctamente.");
-
+      const alter = process.env.ALTER === 'true';
       // Sincronizar los modelos con la base de datos
-      await this.connection?.sync({ alter: false });
+      await this.connection?.sync({ alter: alter });
       console.log("Base de datos sincronizada correctamente.");
 
     } catch (err) {

@@ -2,7 +2,7 @@
 import Queue from "bull";
 import { SendEmail } from "./SendEmail";
 export const emailQueue  = new Queue("emailQueue",{
-    redis:{host:"127.0.0.1", port: 6379}
+    redis:{host:"redis", port: 6379}
 });
 
 emailQueue.process(async (job: any) => {

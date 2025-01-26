@@ -335,7 +335,7 @@ class UserProgramaController {
         );
         return res
           .status(200)
-          .json({ message: "Operación completada", respuesta });
+          .json({ message: "Operación completada" , status: respuesta});
       } else {
         const respuesta = await OpenaiController.generateActivitys(
           existingTags,
@@ -343,7 +343,7 @@ class UserProgramaController {
         );
         return res
           .status(200)
-          .json({ message: "Operación completada", respuesta });
+          .json({ message: "Operación completada", status: respuesta });
       }
     } catch (error) {
       console.error(error);

@@ -171,8 +171,19 @@ class OpenaiController {
         model: "gemini-1.5-flash",
         generationConfig,
       });
-      const result = await model.generateContent(prompt);
-      const resultJSON = JSON.parse(result.response.text());
+      let intentos = 0;
+      let flag = false;
+      let resultJSON;
+      while (intentos < 10 && !flag) {
+        try {
+          const result = await model.generateContent(prompt);
+          resultJSON = JSON.parse(result.response.text().trim());
+          flag = true;
+        } catch (error: any) {
+          console.log("error al parsear respuesta de gemini: ", error.message);
+          intentos++;
+        }
+      }
       const registros = await Activitys.bulkCreate(
         resultJSON.map((item: any) => ({
           nombre_tecnica: item.nombre_tecnica,
@@ -190,9 +201,8 @@ class OpenaiController {
           });
         });
       });
-      console.log(activityTags);
       await ActivityTags.bulkCreate(activityTags);
-      return { cant, prompt, resultado: resultJSON };
+      return true;
     } catch (error) {
       console.error(error);
       return { error: error };
