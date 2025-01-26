@@ -198,26 +198,26 @@ UserProgramaRouter.post('/getprogramcompleto/:user_id', userprogramacontroller.g
 UserProgramaRouter.put('/:user_id/:id', userprogramacontroller.updateByUserAndTecnica);
 
 UserProgramaRouter.post('/generateActivitys', userprogramacontroller.generar);
+
 /**
  * Post track
  * @openapi
  * /userprograma/estrellas/{userId}:
- *   get:
- *    tags:
- *     - UserPrograma
- *   summary: "Obtener estrellas de un usuario"
- *  description: Este endpoint es para obtener las estrellas de las actividades completadas de un usuario
- * parameters:
- *  - name: userId
- *   in: path
- *  description: ID del usuario
- * required: true
- * responses:
- * '200':
- * description: Retorna el numero de estrellas con su respectiva fecha.
- * '422':
- * description: Error de validacion.
- * 
+ *    get:
+ *      tags:
+ *        - UserPrograma
+ *      summary: "Obtener estrellas"
+ *      description: Este endpoint es para obtener las estrellas de un usuario
+ *      parameters: 
+ *        - name: userId
+ *          in: path
+ *          description: ID del usuario
+ *          required: true
+ *      responses:
+ *        '200':
+ *          description: Retorna las estrellas del usuario
+ *        '422':
+ *          description: Error de validacion.
  */
 UserProgramaRouter.get('/estrellas/:userId', userprogramacontroller.getStars);
 export default UserProgramaRouter;
