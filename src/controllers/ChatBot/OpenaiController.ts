@@ -195,7 +195,7 @@ class OpenaiController {
         order: [["id", "ASC"]],
       });
 
-      registros.forEach((activity, index) => {
+      registros.forEach((activity) => {
         tags.forEach((tag: any) => {
           activityTags.push({
             activity_id: activity.id,
@@ -204,10 +204,10 @@ class OpenaiController {
   
           const tagImages = images.filter((image) => image.tags_id === tag.id);
           if (tagImages.length > 0) {
-            const imageIndex = index % tagImages.length;
+            const randomIndex = Math.floor(Math.random() * tagImages.length); 
             imageUrls.push({
               activity_id: activity.id,
-              imagen_url: tagImages[imageIndex].url,
+              imagen_url: tagImages[randomIndex].url,
             });
           }
         });
