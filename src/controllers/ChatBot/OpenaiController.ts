@@ -173,9 +173,23 @@ class OpenaiController {
         model: "gemini-1.5-flash",
         generationConfig,
       });
-      const result = await model.generateContent(prompt);
-      const resultJSON = JSON.parse(result.response.text());
+      let resultJSON;
+      let intentos = 0;
+      let flag = false;
 
+      while (intentos < 10 && !flag) {
+        try {
+          intentos++;
+          const result = await model.generateContent(prompt);
+          resultJSON = JSON.parse(result.response.text());
+          flag = true;
+        } catch (error) {
+          console.error(`Error al generar actividades (intento ${intentos}):`, error);
+          if (intentos >= 10) {
+            throw new Error("Error persistente al generar actividades después de múltiples intentos.");
+          }
+        }
+      }
       const registros = await Activitys.bulkCreate(
         resultJSON.map((item: any) => ({
           nombre_tecnica: item.nombre_tecnica,
