@@ -24,7 +24,7 @@ Este proyecto es un backend desarrollado para FNL en Node.js utilizando TypeScri
    git clone https://github.com/PaulPPS632/SWAGGER-FNL-BACK.git
    cd SWAGGER-FNL-BACK
 
-1. **Crea un .env con los siguientes datos**:
+2. **Crea un .env con los siguientes datos**:
 
     - JWT_SECRET
     - OPENAI_API_KEY
@@ -39,12 +39,12 @@ Este proyecto es un backend desarrollado para FNL en Node.js utilizando TypeScri
     - EMAIL_PASSWORD=""
     - ALTER=true #true si construyes por primera vez cambia a false despues
 
-2. **Levanta los servicios en el entorno de desarrollo**:
+3. **Levanta los servicios en el entorno de desarrollo**:
 
    ```bash
    docker-compose up --build
 
-3. **Levanta los servicios en el entorno de producción**:
+4. **Levanta los servicios en el entorno de producción**:
 
    ```bash
    docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
@@ -59,3 +59,8 @@ Este proyecto es un backend desarrollado para FNL en Node.js utilizando TypeScri
 2. **Para ver la documentacion de la api ve a la siguiente ruta**:
 
     - **Documentacion**: [DOCUMENTACION](http://localhost:3000/documentation)
+
+3. **Para generar las Actividades**:
+
+    - **Repositorio Generar Actividades**: [GENERAR_ACTIVIDADES](https://github.com/PaulPPS632/combinatoria-tags)
+      
