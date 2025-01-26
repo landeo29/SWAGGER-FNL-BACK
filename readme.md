@@ -1,4 +1,4 @@
-# Node.js Backend con Docker
+# Backend del proyecto FNL
 
 Este proyecto es un backend desarrollado para FNL en Node.js utilizando TypeScript y Express.
 
