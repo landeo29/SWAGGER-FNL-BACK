@@ -202,24 +202,20 @@ UserProgramaRouter.post('/generateActivitys', userprogramacontroller.generar);
 /**
  * Post track
  * @openapi
- * /userprograma/{user_id}/{id}:
- *    delete:
+ * /userprograma/estrellas/{userId}:
+ *    get:
  *      tags:
  *        - UserPrograma
- *      summary: "Eliminar User Programa"
- *      description: Este endpoint para eliminar un User Programa, se necesita el ID
+ *      summary: "Obtener estrellas"
+ *      description: Este endpoint es para obtener las estrellas de un usuario
  *      parameters: 
- *        - name: user_id
+ *        - name: userId
  *          in: path
- *          description: ID del User Programa
- *          required: true
- *        - name: id
- *          in: path
- *          description: ID del User Programa
+ *          description: ID del usuario
  *          required: true
  *      responses:
  *        '200':
- *          description: Retorna mensaje de confirmacion.
+ *          description: Retorna las estrellas del usuario
  *        '422':
  *          description: Error de validacion.
  */

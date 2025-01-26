@@ -378,6 +378,7 @@ class UserController {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const offset = (page - 1) * limit;
+      const dateFilter = req.query.date; //añadido
   
       const userId = req.userId.userId;
       console.log('userId:', userId);
@@ -394,6 +395,10 @@ class UserController {
         return res.status(404).json({
           message: 'Usuario no encontrado'
         });
+      }
+
+      if (!dateFilter) {    //añadido
+        return res.status(400).json({ message: 'La fecha es requerida' });
       }
   
       const totalUsers = await User.count({
@@ -426,8 +431,14 @@ class UserController {
           },
           {
             model: UserEstresSession,
-            attributes: ['estres_nivel_id'],
-            required: false
+            attributes: [ // Marcar 0 si no hay estres_nivel_id
+              [Sequelize.fn('COALESCE', Sequelize.col('estres_nivel_id'), 0), 'estres_nivel_id'], 
+            ],
+            where: Sequelize.where(
+              Sequelize.fn('DATE', Sequelize.col('created_at')),
+              dateFilter // Fecha específica
+            ),
+            required: false, // incluye usuarios sin estres_nivel_id en la fecha
           }
         ],
         limit,
