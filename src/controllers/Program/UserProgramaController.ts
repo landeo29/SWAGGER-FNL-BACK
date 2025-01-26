@@ -477,8 +477,8 @@ class UserProgramaController {
             comentario: programa.comentario,
             estrellas: programa.estrellas,
             start_date: programa.start_date,
-            completed_date: programa.completed_date
-
+            completed_date: programa.completed_date,
+            url_img: programa.activity.imagen_url
       }));
       res.status(200).json({ userProgramas:respuesta }); // Responder con los datos de ambas tablas
     } catch (error: any) {

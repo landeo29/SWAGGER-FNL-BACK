@@ -23,6 +23,9 @@ export class Activitys extends Model{
     @Column(DataType.TEXT)
     guia!: string;
 
+    @Column(DataType.STRING)
+    imagen_url!: string;
+
     @BelongsToMany(() => Tags, () => ActivityTags)
     tags!: Tags[];
 }
