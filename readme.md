@@ -26,17 +26,17 @@ Este proyecto es un backend desarrollado para FNL en Node.js utilizando TypeScri
 
 1. **Crea un .env con los siguientes datos**:
 
-    -JWT_SECRET
-    -OPENAI_API_KEY
-    -GEMINI_API_KEY='{"keys":["",""]}'
-    -DB_NAME
-    -DB_USER
-    -DB_PASSWORD
-    -DB_HOST
-    -DB_DIALECT=mysql
-    -DB_PORT=3306
-    -EMAIL=paulyeffertperezsanjinez@gmail.com
-    -EMAIL_PASSWORD=""
+    - JWT_SECRET
+    - OPENAI_API_KEY
+    - GEMINI_API_KEY='{"keys":["",""]}'
+    - DB_NAME
+    - DB_USER
+    - DB_PASSWORD
+    - DB_HOST
+    - DB_DIALECT=mysql
+    - DB_PORT=3306
+    - EMAIL=paulyeffertperezsanjinez@gmail.com
+    - EMAIL_PASSWORD=""
 
 2. **Levanta los servicios en el entorno de desarrollo**:
 
