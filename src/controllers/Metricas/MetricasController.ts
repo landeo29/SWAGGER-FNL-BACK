@@ -98,6 +98,7 @@ class MetricasController {
         include: [
           {
             model: User,
+            as: "sender", // Especificar el alias
             where: {
               empresa_id: empresa_id, // Filtrar por empresa_id
             },
