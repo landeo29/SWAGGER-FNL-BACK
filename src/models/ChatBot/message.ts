@@ -21,11 +21,19 @@ export class Message extends Model {
 
   @ForeignKey(() => User)
   @AllowNull(false)
-  @Column(DataType.INTEGER)
+  @Column(DataType.INTEGER) 
   user_id!: number;
 
-  @BelongsTo(() => User)
+  @BelongsTo(() => User, { as: 'sender', foreignKey: 'user_id' })
   user!: User;
+
+  @ForeignKey(() => User)
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  user_id_receptor!: number;
+
+  @BelongsTo(() => User, { as: 'receiver', foreignKey: 'user_id_receptor' })
+  user_receptor!: User;
 
   @Column(DataType.STRING)
   sentimientos!: string;
