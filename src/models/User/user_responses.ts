@@ -14,6 +14,7 @@ import { AgeRange } from "./ageRange";
 import { Hierarchical_level } from "./hierarchical_level";
 import { ResponsabilityLevel } from "./responsabilityLevel";
 import { Gender } from "./gender";
+import { Sedes } from "./sedes";
 
 @Table({
   timestamps: false,
@@ -63,6 +64,14 @@ export class UserResponses extends Model {
 
   @BelongsTo(() => Gender)
   gender!: Gender;
+  
+  @ForeignKey(() => Sedes)
+  @AllowNull(false)
+  @Column(DataType.INTEGER)
+  sedes_id!: number;
+
+  @BelongsTo(() => Sedes)
+  sedes!: Sedes;
 
   @CreatedAt
   created_at!: Date;

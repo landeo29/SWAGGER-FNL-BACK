@@ -1,5 +1,6 @@
 import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
 import { UserEstresSession } from "../../models/Clasificacion/userestressession";
+import { EstresContador } from "../../models/Clasificacion/estres_contador";
 import { Sequelize } from 'sequelize';
 import { User } from "../../models/User/user";
 class UserEstresSessionController{
@@ -35,22 +36,42 @@ class UserEstresSessionController{
         // Busca si ya existe una sesión de estrés para el usuario
         const existingSession = await UserEstresSession.findOne({ where: { user_id } });
 
-        //Se verifica si el estres es diferente a Leve
-        if (estres_nivel_id != 1){
-          const estresNivel = await EstresNiveles.findOne({
-            where: { id: estres_nivel_id }
-          });
 
-          if (!estresNivel) {
+        const estresNivel = await EstresNiveles.findOne({
+            where: { id: estres_nivel_id }
+        });
+
+        if (!estresNivel) {
             console.log('No se encontró el registro con el id proporcionado.');
             res.status(500).json({ message: 'Error del servidor.' });
             return
           }
           
-          //Se Suma en 1 a la cantidad contenida o se le asigna 1 en caso sea nulo
-          const nuevaCantidad = estresNivel.cantidad ? estresNivel.cantidad + 1 : 1;
-          await estresNivel.update({ cantidad: nuevaCantidad });
+        const userResp = await User.findOne({
+          where:{ id: user_id},
+          attributes: ["empresa_id"]
+        })
+
+        if (!userResp) {
+          console.log('No se encontró la empresa del userid proporcionado.');
+          res.status(500).json({ message: 'Error del servidor.' });
+          return
         }
+
+        const estresContador = await EstresContador.findOne({
+          where: {estres_nivel_id: estres_nivel_id, empresa_id: userResp.empresa_id}
+        })
+
+
+        if (estresContador){
+
+          const nuevaCantidad = estresContador.cantidad ? estresContador.cantidad + 1 : 1;
+          await estresContador.update({ cantidad: nuevaCantidad });
+        }else {
+          await EstresContador.create({cantidad: 1, estres_nivel_id: estres_nivel_id, empresa_id: userResp.empresa_id});
+        }
+         
+        
         if (existingSession) {
             // Si la sesión ya existe, actualiza el estres_nivel_id
             existingSession.estres_nivel_id = estres_nivel_id;

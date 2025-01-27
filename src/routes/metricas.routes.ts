@@ -22,9 +22,9 @@ MetricasRouter.get("/total_empleados/:empresa_id", metricasController.TotalEmple
 
 MetricasRouter.get("/EmpleadosEstressPorcentaje/:empresa_id", metricasController.EmpleadosEstressPorcentaje);
 
-MetricasRouter.get("/UsanFuncyHoy", metricasController.EmpleadosUsaronFuncy);
+MetricasRouter.get("/UsanFuncyHoy/:empresa_id", metricasController.EmpleadosUsaronFuncy);
 
 MetricasRouter.get("/CausasEstres/:userId", metricasController.CausaEstres);
 
-MetricasRouter.get("/total_empl_estres/", metricasController.TotalEmplEstres);
+MetricasRouter.get("/total_empl_estres/:empresa_id", metricasController.TotalEmplEstres);
 export default MetricasRouter;
