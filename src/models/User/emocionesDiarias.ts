@@ -26,7 +26,6 @@ export class EmocionesDiarias extends Model {
   @AllowNull(false)
   @Column({
     type: DataType.DATEONLY,
-    unique: "user_date_unique" 
   })
   fecha!: Date;
 
