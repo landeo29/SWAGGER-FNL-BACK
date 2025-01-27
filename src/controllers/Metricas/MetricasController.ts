@@ -8,6 +8,7 @@ import { Op } from "sequelize";
 import { endOfDay, startOfDay } from "date-fns";
 import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
 import { Empresas } from "../../models/Global/empresas";
+import { EstresContador } from "../../models/Clasificacion/estres_contador";
 //import moment from "moment";
 
 class MetricasController {
@@ -30,7 +31,7 @@ class MetricasController {
   async EmpleadosEstressPorcentaje(req: any, res: any) {
     try {
       const empresa_id = req.params.empresa_id;
-  
+      let porcentajeAlto = 0
       // Verificar si la empresa existe
       const empresa = await Empresas.findOne({ where: { id: empresa_id } });
       if (!empresa) {
@@ -54,8 +55,8 @@ class MetricasController {
       }
   
       // Obtener la cantidad de empleados con nivel de estrés "Alto"
-      const estresNivelAlto = await EstresNiveles.findOne({
-        where: { nombre: "Alto" },
+      const estresNivelAlto = await EstresContador.findOne({
+        where: { estres_nivel_id: 3, empresa_id:  empresa_id},
       });
   
       if (!estresNivelAlto) {
@@ -64,9 +65,10 @@ class MetricasController {
   
       const cantidadAlto = estresNivelAlto.cantidad || 0;
   
-      // Calcular el porcentaje
-      const porcentajeAlto = (cantidadAlto / totalUsuarios) * 100;
-  
+      if (cantidadAlto != 0){
+         porcentajeAlto = (cantidadAlto / totalUsuarios) * 100;
+      }
+
       // Responder con los datos
       return res.status(200).json({
         empresa: empresa.nombre,
@@ -81,22 +83,32 @@ class MetricasController {
     }
   }
   
-  async EmpleadosUsaronFuncy(_req: any, res: any) {
-    //const hoy = new Date();
-    const startOfDayLocal = startOfDay(new Date());
-    const endOfDayLocal = endOfDay(new Date());
-    console.log("hoy: ", startOfDayLocal, endOfDayLocal);
-    const cantidadMensajes = await Message.count({
-      where: {
-        user_id: {
-          [Op.ne]: 1,
-        },
-        created_at: {
-            [Op.between]: [startOfDayLocal, endOfDayLocal], // Filtra los mensajes creados entre el inicio y el fin del día
+  async EmpleadosUsaronFuncy(req: any, res: any) {
+    try {
+      const empresa_id = req.params.empresa_id;
+      const startOfDayLocal = startOfDay(new Date());
+      const endOfDayLocal = endOfDay(new Date());
+      console.log("hoy: ", startOfDayLocal, endOfDayLocal);
+      const cantidadMensajes = await Message.count({
+        where: {
+          created_at: {
+            [Op.between]: [startOfDayLocal, endOfDayLocal], // Filtrar por fecha
           },
-      },
-    });
-    return res.status(200).json({ cant: cantidadMensajes });
+        },
+        include: [
+          {
+            model: User,
+            where: {
+              empresa_id: empresa_id, // Filtrar por empresa_id
+            },
+          },
+        ],
+      });
+      return res.status(200).json({ cant: cantidadMensajes });
+    }catch (error) {
+      console.error("Error en EmpleadosUsaronFuncyHoy:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
   }
   async CausaEstres(req:any,res:any){
     const userId = req.params.userId;
@@ -120,19 +132,40 @@ class MetricasController {
     return res.status(200).json(causas);
   }
   
-  async TotalEmplEstres(_req:any,res:any){
+  async TotalEmplEstres(req: any, res: any) {
+    try {
+      const empresa_id = req.params.empresa_id;
+  
 
-    const nivestres = await EstresNiveles.findAll({
-      attributes: ["nombre", "cantidad"],
-    })
+      const nivestres = await EstresNiveles.findAll({
+        attributes: ["id", "nombre"], 
+        include: [
+          {
+            model: EstresContador,
+            attributes: ["cantidad"],
+            where: { empresa_id }, 
+            required: false, 
+          },
+        ],
+      });
 
-    const response = nivestres.map((nivel) => ({
-      nivel: nivel.nombre,
-      cantidad: nivel.cantidad,
-    }));
-
-    return res.status(200).json(response);
+      const response = nivestres.map((nivel) => ({
+        nivel: nivel.nombre,
+        cantidad: nivel.estres_contadores.length > 0
+          ? nivel.estres_contadores[0].cantidad
+          : 0, 
+      }));
+  
+      // Enviar la respuesta
+      res.status(200).json(response);
+    } catch (error) {
+      console.error("Error en TotalEmplEstres:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
   }
+  
+  
+
 }
 
 

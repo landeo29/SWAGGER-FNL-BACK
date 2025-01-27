@@ -17,6 +17,9 @@ import { Tags } from "./Program/Tags";
 import { Activitys } from "./Program/Activitys";
 import { ActivityTags } from "./Program/ActivityTags";
 import { Imagenes } from "./Program/Imagenes";
+import { Area } from "./User/area";
+import { Sedes } from "./User/sedes";
+import { EstresContador } from "./Clasificacion/estres_contador";
 
 const models = [
   User,
@@ -37,5 +40,8 @@ const models = [
   UserPrograma,
   Role,
   Imagenes,
+  Area,
+  Sedes,
+  EstresContador,
 ];
 export default models;

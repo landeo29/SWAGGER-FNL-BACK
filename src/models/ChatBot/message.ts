@@ -27,14 +27,6 @@ export class Message extends Model {
   @BelongsTo(() => User)
   user!: User;
 
-  @ForeignKey(() => User)
-  @AllowNull(false)
-  @Column(DataType.INTEGER)
-  user_id_receptor!: number;
-
-  @BelongsTo(() => User)
-  user_receptor!: User;
-
   @Column(DataType.STRING)
   sentimientos!: string;
 

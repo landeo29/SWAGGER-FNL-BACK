@@ -8,6 +8,7 @@ class UserResponseController {
       hierarchical_level_id,
       responsability_level_id,
       gender_id,
+      sedes_id,
       created_at,
     } = req.body;
 
@@ -18,6 +19,7 @@ class UserResponseController {
         hierarchical_level_id,
         responsability_level_id,
         gender_id,
+        sedes_id,
         created_at,
       });
 
