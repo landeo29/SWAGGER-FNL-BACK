@@ -139,7 +139,9 @@ class UserEstresSessionController{
         const result = await UserEstresSession.findAll({
           attributes: [
             [Sequelize.fn('DATE', Sequelize.col('created_at')), 'date'],
-            [Sequelize.fn('AVG', Sequelize.col('estres_nivel_id')), 'average_stress_level']
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_nivel_id = 1 THEN 1 ELSE NULL END`)), 'LEVE'],
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_nivel_id = 2 THEN 1 ELSE NULL END`)), 'MODERADO'],
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_nivel_id = 3 THEN 1 ELSE NULL END`)), 'ALTO']
           ],
           include: [{
             model: User,
@@ -153,7 +155,11 @@ class UserEstresSessionController{
     
         const data = result.map(item => ({
           date: item.get('date'),
-          average_stress_level: item.get('average_stress_level')
+          total_stress_level: {
+            LEVE: item.get('LEVE'),
+            MODERADO: item.get('MODERADO'),
+            ALTO: item.get('ALTO')
+          }
         }));
     
         return res.status(200).json(data);
