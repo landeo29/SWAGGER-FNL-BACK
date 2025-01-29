@@ -44,6 +44,22 @@ class MaintanceController {
     }
   }
 
+  async VerAreas(req: any, res:any){
+    try{
+      const empresa_id = req.params.empresa_id;
+      
+      const areas = await Area.findAll({
+        where:{
+          empresa_id: empresa_id
+        }
+      })
+
+      res.json({ results: areas });
+    }catch (error) {
+      res.status(500).json({ error: "Error al obtener rango de edades" });
+    }
+  }
+
   async Sedes(req: any, res:any){
     try{
       const user_id = req.params.userid;

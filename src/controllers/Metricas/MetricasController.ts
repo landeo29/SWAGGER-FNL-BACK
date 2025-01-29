@@ -9,6 +9,8 @@ import { endOfDay, startOfDay } from "date-fns";
 import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
 import { Empresas } from "../../models/Global/empresas";
 import { EstresContador } from "../../models/Clasificacion/estres_contador";
+import { UserResponses } from "../../models/User/user_responses";
+import { Hierarchical_level } from "../../models/User/hierarchical_level";
 //import moment from "moment";
 
 class MetricasController {
@@ -90,7 +92,11 @@ class MetricasController {
       const endOfDayLocal = endOfDay(new Date());
       console.log("hoy: ", startOfDayLocal, endOfDayLocal);
       const cantidadMensajes = await Message.count({
+        
         where: {
+          user_id: {
+            [Op.ne]: 1, // Excluye los mensajes enviados por el bot (user_id = 1)
+          },
           created_at: {
             [Op.between]: [startOfDayLocal, endOfDayLocal], // Filtrar por fecha
           },
@@ -104,34 +110,80 @@ class MetricasController {
             },
           },
         ],
+        group: ['user_id'],
       });
-      return res.status(200).json({ cant: cantidadMensajes });
+      return res.status(200).json({ cant: cantidadMensajes.length });
     }catch (error) {
       console.error("Error en EmpleadosUsaronFuncyHoy:", error);
       res.status(500).json({ message: "Error interno del servidor" });
     }
   }
-  async CausaEstres(req:any,res:any){
-    const userId = req.params.userId;
-    const mensajes = await Message.findAll({
-      where: {
-        user_id: userId
-      },
-      attributes: ["factor_psicosocial"]
-    })
-    const repetidos: Record<string, number> = {};
-    mensajes.forEach((mensaje) => {
-        const factor = mensaje.factor_psicosocial;
-        repetidos[factor] = (repetidos[factor] || 0) + 1;
-    });
 
-    // Convierte el objeto de conteo en un array de objetos
-    const causas = Object.keys(repetidos).map((factor) => ({
-        causa: factor,
-        count: repetidos[factor],
-    }));
-    return res.status(200).json(causas);
+
+  async CausaEstres(req: any, res: any) {
+    const areaId = req.params.areaId;  // ID del área que se pasa como parámetro
+  
+    try {
+      if (!areaId) {
+        return res.status(400).json({ message: "El parámetro areaId es obligatorio." });
+      }
+  
+      // Obtener todos los niveles jerárquicos asociados con el área
+      const nivelesJerarquicos = await Hierarchical_level.findAll({
+        where: {
+          area_id: areaId,  // Filtramos por el area_id de la tabla 'hierarchical_level'
+        },
+      });
+  
+      // Extraer los ids de los niveles jerárquicos
+      const hierarchicalLevelIds = nivelesJerarquicos.map(level => level.id);
+  
+      // Obtener los usuarios que están relacionados con esos niveles jerárquicos
+      const usuariosEnArea = await UserResponses.findAll({
+        where: {
+          hierarchical_level_id: hierarchicalLevelIds,  // Filtramos por los niveles jerárquicos
+        },
+        include: [
+          {
+            model: User,
+            as: 'user',  // Asegúrate de tener bien definida la relación entre UserResponse y User
+            required: true,  // Solo incluir respuestas que correspondan a un usuario
+          }
+        ]
+      });
+  
+      // Extraer los IDs de los usuarios de los niveles jerárquicos
+      const userIds = usuariosEnArea.map(userResponse => userResponse.user_id);
+  
+      // Obtener los mensajes de esos usuarios
+      const mensajes = await Message.findAll({
+        where: {
+          user_id: userIds
+        },
+        attributes: ["factor_psicosocial"]
+      });
+  
+      const repetidos: Record<string, number> = {};
+      mensajes.forEach((mensaje) => {
+          const factor = mensaje.factor_psicosocial;
+          repetidos[factor] = (repetidos[factor] || 0) + 1;
+      });
+  
+      // Convierte el objeto de conteo en un array de objetos
+      const causas = Object.keys(repetidos).map((factor) => ({
+          causa: factor,
+          count: repetidos[factor],
+      }));
+      return res.status(200).json(causas);
+  
+    } catch (error) {
+      console.error("Error al obtener las causas de estrés:", error);
+      return res.status(500).json({ message: "Error interno del servidor" });
+    }
   }
+  
+
+  
   
   async TotalEmplEstres(req: any, res: any) {
     try {
