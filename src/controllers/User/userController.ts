@@ -286,7 +286,7 @@ class UserController {
       const sheetName = workbook.SheetNames[0]; // Seleccionar la primera hoja
       const sheetData = utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-      const cant_user = await User.count({where: empresa_id}) //cantidad de usuarios que tiene actualmente
+      const cant_user = await User.count({where: {empresa_id: empresa_id}}) //cantidad de usuarios que tiene actualmente
 
       //validar la cantidad maxima de usuarios a registrar
       const MAX_USERS = 50 - cant_user;
@@ -353,7 +353,8 @@ class UserController {
       }
       await User.bulkCreate( extractedData.map(({password, ...rest}) => ({
         ...rest,
-        password: rest.hashedPassword
+        password: rest.hashedPassword,
+        role_id: 1,
       })));
 
       extractedData.forEach((user) => {
