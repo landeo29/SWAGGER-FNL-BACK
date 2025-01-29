@@ -16,6 +16,8 @@ import { UserEstresSession } from "../../models/Clasificacion/userestressession"
 import { Role } from "../../models/User/role";
 import { Empresas } from "../../models/Global/empresas";
 import { Gender } from "../../models/User/gender";
+import { Area } from "../../models/User/area";
+import { Sedes } from "../../models/User/sedes";
 
 
 class UserController {
@@ -289,7 +291,7 @@ class UserController {
       const cant_user = await User.count({where: {empresa_id: empresa_id}}) //cantidad de usuarios que tiene actualmente
 
       //validar la cantidad maxima de usuarios a registrar
-      const MAX_USERS = 50 - cant_user;
+      const MAX_USERS = 53 - cant_user;
 
       if (sheetData.length > MAX_USERS) {
           return res.status(400).json({
@@ -297,20 +299,57 @@ class UserController {
           });
       }
 
+      const cargosDB = await Hierarchical_level.findAll({
+          include: [{ model: Area, where: { empresa_id } }]
+      });
+
+      const sedesDB = await Sedes.findAll({ where: { empresa_id } });
+
+      // Mapas para buscar rápido
+      const cargoMap = new Map();
+      cargosDB.forEach(c => cargoMap.set(`${c.level.toLowerCase()}|${c.area.area.toLowerCase()}`, c.id));
+
+      const sedeMap = new Map();
+      sedesDB.forEach(s => sedeMap.set(s.sede.toUpperCase(), s.id)); // Convertir a minúsculas
+
+
       // Filtrar las columnas necesarias
       const extractedData = await Promise.all(
-        sheetData.map(async (row: any) => {
-            const password = generarPassword(8); // Generar password
-            const hashedPassword = await bcrypt.hash(password, 10); // Encriptar password
-            return {
-                username: row.username || row.Username,
-                email: row.email || row.Email,
-                password, // Guardar password plano
-                hashedPassword, // Guardar password encriptado
-                empresa_id,
-            };
-        })
-    );
+          sheetData.map(async (row: any) => {
+              const password = generarPassword(8);
+              const hashedPassword = await bcrypt.hash(password, 10);
+
+              // Validar Cargo y Sede
+              const cargoKey = `${row.Cargo.toLowerCase()}|${row.Area.toLowerCase()}`;
+              if (!cargoMap.has(cargoKey)) {
+                  throw new Error(`Cargo o área inválidos: ${row.Cargo} - ${row.Area}`);
+              }
+              const hierarchical_level_id = cargoMap.get(cargoKey);
+
+              if (!sedeMap.has(row.Sede.toUpperCase())) {
+                  throw new Error(`Sede inválida: ${row.Sede}`);
+              }
+              const sede_id = sedeMap.get(row.Sede.toUpperCase());
+              
+              const [apellidos, nombres] = row["Apellidos, Nombres"].split(", ");
+              const nombre = nombres.split(" ")[0]; // Primer nombre
+              const apellido = apellidos.split(" ")[0]; // Primer apellido
+
+              // Crear un username usando las primeras letras de ambos
+              const username = `${apellido.toLowerCase().slice(0, 4)}${nombre.toLowerCase().slice(0, 4)}`;
+
+
+              return {
+                  username: username,
+                  email: row.Correo,
+                  password,
+                  hashedPassword,
+                  empresa_id,
+                  hierarchical_level_id,
+                  sede_id
+              };
+          })
+      );
 
       const uniqueUsernames = new Set();
       const uniqueEmails = new Set();
@@ -357,16 +396,39 @@ class UserController {
         role_id: 1,
       })));
 
+      const responseUsers = extractedData.map(user => ({
+        username: user.username,
+        password: user.password,  // Contraseña no encriptada
+        email: user.email
+      }));
+  
+
       extractedData.forEach((user) => {
-        console.log("enviado a bull")
-        emailQueue.add({
-          email: user.email,
-          subject: "Bienvenido a FNL",
-          body: `Tu cuenta es: ${user.email} ,Tu password es: ${user.password}`
-        }, { attempts: 3 })
+          console.log("enviado a bull")
+          emailQueue.add({
+            email: user.email,
+            subject: "Bienvenido a la Experiencia: Reduzca su Estrés Laboral con FNL",
+            body: `
+              <p>Estimados participantes,</p>
+              <p>Es un gusto saludarlos y darles la bienvenida al Piloto de la Versión 3 del App FNL (Funcional Neuro Laboral), cuyo objetivo es contribuir a la reducción del estrés laboral y mejorar el bienestar en el entorno de trabajo.</p>
+              <p>Agradecemos su participación en esta fase de prueba, que nos permitirá seguir optimizando la herramienta. Según lo coordinado, adjuntamos sus credenciales de acceso: </p>
+              <p>Usuario: ${user.username}</p>
+              <p>Password: ${user.password}</p>
+              <p>Las cuales estarán activas a partir de la próxima semana para que puedan comenzar a utilizar el aplicativo.</p>
+              <p>Para el éxito de este piloto, su participación activa es clave. Por ello, hemos creado un grupo de WhatsApp para facilitar la comunicación, resolver dudas y compartir experiencias. Los invitamos a unirse a través del siguiente enlace:</p>
+              <p><strong>🔗 <a href="https://chat.whatsapp.com/IMs4NVM66XdBqzgK5MxhWW">Unirse al grupo de WhatsApp</a></strong></p>
+              <p>Nuevamente, gracias por ser parte de esta iniciativa. Quedamos atentos a sus comentarios y sugerencias.</p>
+              <p>Saludos cordiales,</p>
+              <p><strong>Javier Ruiz Santamaría</strong><br>CEO Fundador de FNL</p>
+            `
+          }, { attempts: 3 })
       })
 
-      return res.status(200).json({ message: `${extractedData.length} Usuarios registrados exitosamente.` });
+
+      return res.status(200).json({ 
+        message: `${extractedData.length} Usuarios registrados exitosamente.`,
+        users: responseUsers // Array con los usuarios registrados, contraseñas no encriptadas y correos
+      });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error processing file", error });
