@@ -23,6 +23,37 @@ const userprogramacontroller = new UserProgramaController()
 UserProgramaRouter.get('/', userprogramacontroller.getAll);
 
 /**
+ * GET track
+ * @openapi
+ * /userprograma/{user_id}/actividad/{activity_id}:
+ *    get:
+ *      tags:
+ *        - UserPrograma
+ *      summary: "Obtener start_date de un UserPrograma por actividad"
+ *      description: Este endpoint es para obtener el start_date de un registro por user_id y activity_id
+ *      parameters:
+ *        - name: user_id
+ *          in: path
+ *          description: ID del usuario
+ *          required: true
+ *        - name: activity_id
+ *          in: path
+ *          description: ID de la actividad
+ *          required: true
+ *      responses:
+ *        '200':
+ *          description: Retorna el start_date del programa.
+ *        '404':
+ *          description: Programa no encontrado.
+ *        '500':
+ *          description: Error interno del servidor.
+ */
+UserProgramaRouter.get(
+    '/:user_id/actividad/:activity_id',
+    userprogramacontroller.getStartDateByActivity.bind(userprogramacontroller)
+  );
+  
+/**
  * Post track
  * @openapi
  * /userprograma/{id}:

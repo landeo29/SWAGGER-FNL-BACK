@@ -350,6 +350,31 @@ class UserProgramaController {
       return res.status(500).json({ error: "error interno del servidor" });
     }
   };
+
+  async getStartDateByActivity(req: any, res: any) {
+    const { user_id, activity_id } = req.params; // Obtener user_id y activity_id de los parámetros
+
+    console.log(user_id, activity_id)
+    try {
+      // Buscar el registro con el user_id y activity_id
+      const userPrograma = await UserPrograma.findOne({
+        where: {
+          user_id: user_id,
+          activity_id: activity_id,
+        },
+        attributes: ["start_date"], // Seleccionar solo el campo start_date
+      });
+      if (!userPrograma) {
+        return res.status(404).json({ error: "Programa no encontrado para el usuario y actividad especificados." });
+      }
+      // Retornar el start_date
+      res.status(200).json({ start_date: userPrograma.start_date });
+    } catch (error) {
+      console.error("Error al obtener el start_date:", error);
+      res.status(500).json({ error: "Error interno del servidor." });
+    }
+  }
+
   async getByUserId(req: any, res: any) {
     const { user_id } = req.params; // Obtener el user_id de los parámetros
     try {

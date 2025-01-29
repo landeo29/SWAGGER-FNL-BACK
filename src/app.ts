@@ -19,6 +19,7 @@ import MetricasRouter from "./routes/metricas.routes";
 import EmpresaRouter from "./routes/empresa.routes";
 import role_router from "./routes/user.roles";
 import EmocionesDiariasRoutes from "./routes/emocionesDiarias.routes";
+import SpeechTextRoutes from "./routes/speechtext.routes";
 
 class App {
   private server: Application;
@@ -58,6 +59,7 @@ class App {
     this.server.use("/api/empresa", EmpresaRouter);
     this.server.use("/api", role_router);
     this.server.use("/api", EmocionesDiariasRoutes); 
+    this.server.use("/api/voice", SpeechTextRoutes); 
     //this.server.use("/api", TipoTecnicasRoutes);
   }
   public getServer(): Application {

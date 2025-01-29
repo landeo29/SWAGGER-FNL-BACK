@@ -36,6 +36,25 @@ MaintanceRoutes.get("/range-age", MaintanceController.RangeAge);
  */
 MaintanceRoutes.get("/areas/:userid", MaintanceController.Areas);
 
+
+/**
+ * Post track
+ * @openapi
+ * /verareas:
+ *    get:
+ *      tags:
+ *        - Areas
+ *      summary: "Ruta para obtener las areas"
+ *      description: Este endpoint es para obtener las areas
+ *      responses:
+ *        '200':
+ *          description: Retorna todos las areas
+ *        '422':
+ *          description: Error de validacion.
+ */
+MaintanceRoutes.get("/verareas/:empresa_id", MaintanceController.VerAreas);
+
+
 /**
  * Post track
  * @openapi
