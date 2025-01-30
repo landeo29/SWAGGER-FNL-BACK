@@ -148,6 +148,11 @@ class MetricasController {
             model: User,
             as: 'user',  // Asegúrate de tener bien definida la relación entre UserResponse y User
             required: true,  // Solo incluir respuestas que correspondan a un usuario
+          },
+          {
+              model: Hierarchical_level,
+              as: 'hierarchical_level',  // Asegúrate de definir bien la relación
+              attributes: ['id', 'level']  // Solo necesitamos el ID y el nombre del cargo
           }
         ]
       });
@@ -157,23 +162,39 @@ class MetricasController {
   
       // Obtener los mensajes de esos usuarios
       const mensajes = await Message.findAll({
-        where: {
-          user_id: userIds
-        },
-        attributes: ["factor_psicosocial"]
+          where: { user_id: userIds },
+          attributes: ["factor_psicosocial", "user_id"]
       });
-  
-      const repetidos: Record<string, number> = {};
-      mensajes.forEach((mensaje) => {
-          const factor = mensaje.factor_psicosocial;
-          repetidos[factor] = (repetidos[factor] || 0) + 1;
+      
+      const userCargoMap = new Map();
+      usuariosEnArea.forEach(userResponse => {
+            userCargoMap.set(userResponse.user_id, userResponse.hierarchical_level.level);
       });
-  
-      // Convierte el objeto de conteo en un array de objetos
-      const causas = Object.keys(repetidos).map((factor) => ({
-          causa: factor,
-          count: repetidos[factor],
-      }));
+
+      const causasMap = new Map<string, { count: number, cargos: Set<string> }>();
+
+      mensajes.forEach(mensaje => {
+            const factor = mensaje.factor_psicosocial;
+            const cargo = userCargoMap.get(mensaje.user_id);
+
+            if (!causasMap.has(factor)) {
+                causasMap.set(factor, { count: 0, cargos: new Set() });
+            }
+
+            const causaData = causasMap.get(factor)!;
+            causaData.count += 1;
+            if (cargo) {
+                causaData.cargos.add(cargo);
+            }
+        });
+
+      // Convertir los datos a un array
+      const causas = Array.from(causasMap.entries()).map(([factor, data]) => ({
+            causa: factor,
+            count: data.count,
+            cargos_afectados: Array.from(data.cargos)  // Convertir Set a Array
+        }));
+
       return res.status(200).json(causas);
   
     } catch (error) {
