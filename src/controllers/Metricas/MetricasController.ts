@@ -11,6 +11,8 @@ import { Empresas } from "../../models/Global/empresas";
 import { EstresContador } from "../../models/Clasificacion/estres_contador";
 import { UserResponses } from "../../models/User/user_responses";
 import { Hierarchical_level } from "../../models/User/hierarchical_level";
+import { UserPrograma } from "../../models/Program/userprograma";
+
 //import moment from "moment";
 
 class MetricasController {
@@ -238,6 +240,67 @@ class MetricasController {
     }
   }
   
+  
+
+  async InteraccionApp(req: any, res: any) {
+    try {
+      const empresa_id = req.params.empresa_id;
+
+      // Obtener la fecha de hoy en formato YYYY-MM-DD
+      const today = new Date();
+      const diaHoy = today.toISOString().slice(0, 10);  // Formato YYYY-MM-DD
+
+      // 1. Obtener los usuarios que pertenecen a la empresa
+      const users = await User.findAll({
+        where: { empresa_id: empresa_id }
+      });
+
+      if (!users || users.length === 0) {
+        return res.status(404).json({ error: "No se encontraron usuarios para esta empresa" });
+      }
+  
+      // 2. Buscar las actividades completadas hoy por cada usuario, solo una vez por usuario
+      const usuariosCompletaronHoy = await UserPrograma.findAll({
+        where: {
+          completed_date: {
+            [Op.between]: [
+              new Date(diaHoy + 'T00:00:00.000Z'), // Desde las 00:00 de hoy
+              new Date(diaHoy + 'T23:59:59.999Z')  // Hasta las 23:59 de hoy
+            ]
+          }
+        },
+        attributes: ['user_id'], // Solo necesitamos el user_id
+        group: ['user_id'], // Agrupamos por user_id para contar cada usuario solo una vez
+        include: [
+          {
+            model: User,
+            required: true,
+            where: { empresa_id: empresa_id }  // Filtramos también por empresa_id en la tabla User
+          }
+        ]
+      });
+
+
+      // Calcular la cantidad de usuarios que han completado al menos una actividad hoy
+      const totalUsuariosCompletaronHoy = usuariosCompletaronHoy.length;
+
+      // 3. Calcular el total de usuarios para la empresa
+      const totalUsuarios = users.length;
+
+      // 4. Calcular la cantidad de usuarios que no han completado ninguna actividad hoy
+      const usuariosNoCompletaronHoy = totalUsuarios - totalUsuariosCompletaronHoy;
+      // Responder con los resultados
+      return res.status(200).json({
+        totalUsuarios,
+        totalUsuariosCompletaronHoy,
+        usuariosNoCompletaronHoy
+      });
+
+    } catch (error) {
+      console.error("Error en InteraccionApp:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  }
   
 
 }
