@@ -25,5 +25,28 @@ class TestEstresSalidaController {
         });
     }
   }
+
+  async getUserTestEstresSalida(req:any, res: any){
+    try {
+      const { userid } = req.params;
+      const respuestas = await TestEstresSalida.findOne({
+        where:{
+          user_id: userid
+        }
+      });
+
+      if (!respuestas) {
+        return res.status(404).json({ error: "Usuario no cuenta con test de estres de salida" });
+      }
+
+      res.status(200).json(respuestas);
+    } catch (error) {
+      res
+        .status(500)
+        .json({
+          error: "No se pudieron recuperar las respuestas del test de estrés con ese usuario.",
+        });
+    }
+  }
 }
 export default new TestEstresSalidaController();

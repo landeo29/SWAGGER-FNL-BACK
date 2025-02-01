@@ -291,7 +291,7 @@ class UserController {
       const cant_user = await User.count({where: {empresa_id: empresa_id}}) //cantidad de usuarios que tiene actualmente
 
       //validar la cantidad maxima de usuarios a registrar
-      const MAX_USERS = 53 - cant_user;
+      const MAX_USERS = 55 - cant_user;
 
       if (sheetData.length > MAX_USERS) {
           return res.status(400).json({
@@ -489,6 +489,10 @@ class UserController {
               {
                 model: Hierarchical_level,
                 attributes: ['level'],
+              },
+              {
+                model: Sedes,
+                attributes: ['sede']
               }
             ]
           },

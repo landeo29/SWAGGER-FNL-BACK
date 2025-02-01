@@ -37,4 +37,22 @@ TestEstresSalidaRoutes.post('/guardarTestEstresSalida', TestEstresSalidaControll
  */
 TestEstresSalidaRoutes.get('/listarTestEstresSalida', TestEstresSalidaController.getAllTestEstresSalida); 
 
+
+/**
+ * Post track
+ * @openapi
+ * /listarTestEstresSalida:
+ *    get:
+ *      tags:
+ *        - Test Estress Salida
+ *      summary: "Listar todos los test de estress de salida"
+ *      description: Este endpoint es para listar todos los test de estress de salida
+ *      responses:
+ *        '200':
+ *          description: Retorna el listado de todos los test de estress de salida
+ *        '422':
+ *          description: Error de validacion.
+ */
+TestEstresSalidaRoutes.get('/getUserTestEstresSalida/:userid', TestEstresSalidaController.getUserTestEstresSalida); 
+
 export default TestEstresSalidaRoutes;

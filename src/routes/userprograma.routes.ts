@@ -49,7 +49,7 @@ UserProgramaRouter.get('/', userprogramacontroller.getAll);
  *          description: Error interno del servidor.
  */
 UserProgramaRouter.get(
-    '/:user_id/actividad/:activity_id',
+    '/:user_id/actividad/:dia',
     userprogramacontroller.getStartDateByActivity.bind(userprogramacontroller)
   );
   
