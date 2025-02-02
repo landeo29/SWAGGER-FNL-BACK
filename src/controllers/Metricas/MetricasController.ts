@@ -302,6 +302,43 @@ class MetricasController {
     }
   }
   
+  async EstresSegunFuncy(req: any, res: any){
+    try{
+      const user_id = req.params.user_id;
+
+      const UserScore = await Message.findAll({
+        where:{user_id: user_id},
+        attributes:['score']
+      })
+
+      if (UserScore.length === 0) {
+        return res.status(404).json({ message: "No hay Score disponible" });
+      }
+
+      // Extraer los valores de score del array de objetos
+      const scores = UserScore.map((entry) => entry.score);
+      
+      // Calcular el promedio
+      const averageScore =
+        scores.reduce((acc, score) => acc + score, 0) / scores.length;
+
+      const finalScore = averageScore > 0 ? 1 : averageScore < 0 ? -1 : 0;
+
+      let nivel_estres = ""
+      if (finalScore == 1){
+        nivel_estres = "Leve"
+      }else if(finalScore == 0){
+        nivel_estres = "Moderado"
+      }else {
+        nivel_estres = "Alto"
+      }
+
+      return res.status(200).json({niv_estres: nivel_estres})
+    } catch (error) {
+      console.error("Error en InteraccionApp:", error);
+      return res.status(500).json({ message: "Error interno del servidor" });
+    }
+  }
 
 }
 
