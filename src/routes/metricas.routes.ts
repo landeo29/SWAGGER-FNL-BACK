@@ -29,4 +29,6 @@ MetricasRouter.get("/CausasEstres/:areaId", metricasController.CausaEstres);
 MetricasRouter.get("/total_empl_estres/:empresa_id", metricasController.TotalEmplEstres);
 
 MetricasRouter.get("/InteraccionApp/:empresa_id", metricasController.InteraccionApp);
+
+MetricasRouter.get("/EstresSegunFuncy/:user_id", metricasController.EstresSegunFuncy);
 export default MetricasRouter;
