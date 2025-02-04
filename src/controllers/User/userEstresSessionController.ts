@@ -3,6 +3,7 @@ import { UserEstresSession } from "../../models/Clasificacion/userestressession"
 import { EstresContador } from "../../models/Clasificacion/estres_contador";
 import { Sequelize } from 'sequelize';
 import { User } from "../../models/User/user";
+
 class UserEstresSessionController{
 
     // Función para obtener el estres_nivel_id por user_id
@@ -168,7 +169,101 @@ class UserEstresSessionController{
         return res.status(500).json({ error: 'Error interno del servidor' });
       }
     }
+
+
+
+    async getTotalEmpleadosPorNivelEstres(req: any, res: any){
+      const userId = req.userId.userId;
+      const fechaParam = req.query.date; // Parámetro opcional para la fecha
+      
+      try {
+        const user = await User.findByPk(userId);
+        if (!user) {
+          return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
     
+        const empresaId = user.empresa_id;
+        
+        let fechaBusqueda;
+        let fechaFormateada;
+
+        if (fechaParam) {
+          // Si se proporciona fecha, usarla
+          fechaBusqueda = new Date(fechaParam);
+          fechaFormateada = fechaBusqueda.toISOString().split('T')[0];
+        } else {
+          // Si no hay fecha, obtener la última fecha con registros
+          const ultimoRegistro = await UserEstresSession.findOne({
+            include: [{
+              model: User,
+              attributes: [],
+              where: { empresa_id: empresaId },
+              required: true
+            }],
+            order: [['created_at', 'DESC']],
+            attributes: [
+              [Sequelize.fn('DATE', Sequelize.col('created_at')), 'fecha']
+            ]
+          });
+
+          if (!ultimoRegistro) {
+            return res.status(404).json({ 
+              error: 'No se encontraron registros para esta empresa' 
+            });
+          }
+
+          fechaFormateada = ultimoRegistro.get('fecha');
+        }
+    
+        const result = await UserEstresSession.findAll({
+          attributes: [
+            [Sequelize.literal(`
+              (COUNT(CASE WHEN estres_nivel_id = 1 THEN 1 END) * 1 +
+               COUNT(CASE WHEN estres_nivel_id = 2 THEN 1 END) * 2 +
+               COUNT(CASE WHEN estres_nivel_id = 3 THEN 1 END) * 3) / 
+              NULLIF(COUNT(*), 0)
+            `), 'promedio_estres'],
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_nivel_id = 1 THEN 1 ELSE NULL END`)), 'LEVE'],
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_nivel_id = 2 THEN 1 ELSE NULL END`)), 'MODERADO'],
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_nivel_id = 3 THEN 1 ELSE NULL END`)), 'ALTO'],
+            [Sequelize.fn('COUNT', '*'), 'total_registros']
+          ],
+          include: [{
+            model: User,
+            attributes: [],
+            where: { empresa_id: empresaId },
+            required: true
+          }],
+          where: Sequelize.where(
+            Sequelize.fn('DATE', Sequelize.col('created_at')),
+            fechaFormateada
+          )
+        });
+    
+        if (!result || result.length === 0) {
+          return res.status(404).json({ 
+            error: 'No se encontraron registros para la fecha especificada' 
+          });
+        }
+    
+        const promedioData = {
+          fecha: fechaFormateada,
+          promedio_estres: Number(result[0].get('promedio_estres')).toFixed(2),
+          desglose: {
+            LEVE: result[0].get('LEVE'),
+            MODERADO: result[0].get('MODERADO'),
+            ALTO: result[0].get('ALTO')
+          },
+          total_registros: result[0].get('total_registros')
+        };
+    
+        return res.status(200).json(promedioData);
+      } catch (error) {
+        console.error('Error al obtener el promedio de estrés de la empresa:', error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+      }
+    }
+
 }
 
 export default new UserEstresSessionController();

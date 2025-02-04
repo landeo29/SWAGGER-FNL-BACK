@@ -9,7 +9,7 @@ import { AgeRange } from "../../models/User/ageRange";
 import Sequelize from "sequelize";
 import { readFile, utils } from "xlsx";
 import { generarPassword } from "../../utils/utils";
-import { Op } from "sequelize";
+
 import { emailQueue } from "../../services/EmailQueue";
 import { Message } from "../../models/ChatBot/message";
 import { UserEstresSession } from "../../models/Clasificacion/userestressession";
@@ -18,6 +18,8 @@ import { Empresas } from "../../models/Global/empresas";
 import { Gender } from "../../models/User/gender";
 import { Area } from "../../models/User/area";
 import { Sedes } from "../../models/User/sedes";
+
+import { Op, fn, col } from "sequelize";
 
 
 class UserController {
@@ -291,7 +293,7 @@ class UserController {
       const cant_user = await User.count({where: {empresa_id: empresa_id}}) //cantidad de usuarios que tiene actualmente
 
       //validar la cantidad maxima de usuarios a registrar
-      const MAX_USERS = 55 - cant_user;
+      const MAX_USERS = 53 - cant_user;
 
       if (sheetData.length > MAX_USERS) {
           return res.status(400).json({
@@ -438,99 +440,243 @@ class UserController {
 
   async listCompanyUsers(req: any, res: any) {
     try {
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 10;
-      const offset = (page - 1) * limit;
-      const dateFilter = req.query.date; //añadido
-  
-      const userId = req.userId.userId;
-      console.log('userId:', userId);
-  
+      const userId = req.userId?.userId;
       if (!userId) {
-        return res.status(400).json({
-          message: 'User ID is missing or invalid'
-        });
-      }
-  
-      const currentUser = await User.findByPk(userId);
-  
-      if (!currentUser) {
-        return res.status(404).json({
-          message: 'Usuario no encontrado'
-        });
+          return res.status(400).json({ message: 'User ID is missing or invalid' });
       }
 
-      if (!dateFilter) {    //añadido
-        return res.status(400).json({ message: 'La fecha es requerida' });
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const fechaParam = req.query.date;
+      const offset = (Number(page) - 1) * Number(limit);
+
+      const currentUser = await User.findByPk(userId);
+      if (!currentUser) {
+          return res.status(404).json({ message: 'Usuario no encontrado' });
       }
-  
-      const totalUsers = await User.count({
+
+      // Get session dates with inline typing
+      const sessionDates = await UserEstresSession.findOne({
+          attributes: [
+              [fn('MIN', col('UserEstresSession.created_at')), 'init_date'],
+              [fn('MAX', col('UserEstresSession.created_at')), 'end_date']
+          ],
+          include: [{
+              model: User,
+              attributes: [],
+              where: { empresa_id: currentUser.empresa_id },
+              required: true
+          }],
+          raw: true
+      }) as { init_date: Date; end_date: Date } | null;
+
+      let dateFilter;
+      if (fechaParam) {
+        dateFilter = new Date(fechaParam).toISOString().split('T')[0];
+      } else {
+        dateFilter = sessionDates?.end_date ? new Date(sessionDates.end_date).toISOString().split('T')[0] : null;
+      }
+      
+      // Define base where clause
+      const whereClause = {
+        empresa_id: currentUser.empresa_id,
+        id: { [Op.ne]: userId }
+      };
+
+      // Get all company locations (sedes) - corrected query
+      const companyLocations = await Sedes.findAll({
+        attributes: ['sede'],
         where: {
-          empresa_id: currentUser.empresa_id,
-          id: {
-            [Op.ne]: userId
-          }
-        }
-      });
-  
-      const users = await User.findAll({
-        attributes: ['id', 'username', 'email'],
-        where: {
-          empresa_id: currentUser.empresa_id,
-          id: {
-            [Op.ne]: userId
-          }
+            empresa_id: currentUser.empresa_id
         },
-        include: [
-          {
-            model: UserResponses,
-            attributes: [],
-            include: [
-              {
-                model: Hierarchical_level,
-                attributes: ['level'],
-              },
-              {
-                model: Sedes,
-                attributes: ['sede']
-              }
-            ]
-          },
-          {
-            model: UserEstresSession,
-            attributes: [ // Marcar 0 si no hay estres_nivel_id
-              [Sequelize.fn('COALESCE', Sequelize.col('estres_nivel_id'), 0), 'estres_nivel_id'], 
-            ],
-            where: Sequelize.where(
-              Sequelize.fn('DATE', Sequelize.col('created_at')),
-              dateFilter // Fecha específica
-            ),
-            required: false, // incluye usuarios sin estres_nivel_id en la fecha
-          }
-        ],
-        limit,
-        offset,
-        raw: true,
-        nest: true,
-        logging: console.log
-      });
+        raw: true
+    });
   
+      // Execute count and find in parallel
+      const [totalUsers, users] = await Promise.all([
+        User.count({ where: whereClause }),
+        User.findAll({
+          attributes: ['id', 'username', 'email'],
+          where: whereClause,
+          include: [
+            {
+              model: UserResponses,
+              required: false,
+              attributes: [],
+              include: [
+                {
+                  model: Hierarchical_level,
+                  attributes: ['level'],
+                  required: false
+                },
+                {
+                  model: Sedes,
+                  attributes: ['sede'],
+                  required: false
+                }
+              ]
+            },
+            {
+              model: UserEstresSession,
+              attributes: [
+                [Sequelize.fn('COALESCE', Sequelize.col('estres_nivel_id'), 0), 'estres_nivel_id']
+              ],
+              where: Sequelize.where(
+                Sequelize.fn('DATE', Sequelize.col('created_at')),
+                dateFilter
+              ),
+              required: false
+            }
+          ],
+          limit: Number(limit),
+          offset,
+          raw: true,
+          nest: true
+        })
+      ]);
+
       return res.status(200).json({
-        users,
-        pagination: {
-          total: totalUsers,
-          page,
-          pages: Math.ceil(totalUsers / limit)
-        }
+          users: users.map(user => ({
+              id: user.id,
+              username: user.username,
+              email: user.email,
+              cargo: user.userresponses?.hierarchical_level?.level || 'Sin asignar',
+              sede: user.userresponses?.sedes?.sede || 'Sin asignar',
+              estres_nivel: user.userestressessions?.estres_nivel_id || 0,
+          })),
+          pagination: {
+              total: totalUsers,
+              page: Number(page),
+              pages: Math.ceil(totalUsers / Number(limit))
+          },
+          dates: {
+              fecha_consultada: dateFilter, 
+              init: sessionDates?.init_date ? new Date(sessionDates.init_date).toISOString().split('T')[0] : null,
+              fin: sessionDates?.end_date ? new Date(sessionDates.end_date).toISOString().split('T')[0] : null
+          },
+          sedes: companyLocations.map(location => location.sede)
       });
-  
+
     } catch (error: any) {
-      return res.status(500).json({
-        message: 'Error al obtener los usuarios',
-        error: error.message
-      });
+        console.error('Error en listCompanyUsers:', error);
+        return res.status(500).json({
+            message: 'Error al obtener los usuarios',
+            error: error.message
+        });
     }
   }
 
+  async listEstresporSede(req: any, res: any) {
+      try {
+        const userId = req.userId?.userId;
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID is missing or invalid' });
+        }
+
+        const fechaParam = req.query.date;
+
+        const currentUser = await User.findByPk(userId);
+        if (!currentUser) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        // Obtener las fechas de las sesiones de estrés
+        const sessionDates = await UserEstresSession.findOne({
+            attributes: [
+                [fn('MIN', col('UserEstresSession.created_at')), 'init_date'],
+                [fn('MAX', col('UserEstresSession.created_at')), 'end_date']
+            ],
+            include: [{
+                model: User,
+                attributes: [],
+                where: { empresa_id: currentUser.empresa_id },
+                required: true
+            }],
+            raw: true
+        }) as { init_date: Date; end_date: Date } | null;
+
+        let dateFilter;
+        if (fechaParam) {
+            dateFilter = new Date(fechaParam).toISOString().split('T')[0];
+        } else {
+            dateFilter = sessionDates?.end_date ? new Date(sessionDates.end_date).toISOString().split('T')[0] : null;
+        }
+
+        // Definir cláusula WHERE base
+        const whereClause = {
+            empresa_id: currentUser.empresa_id,
+            id: { [Op.ne]: userId }
+        };
+
+        // Obtener usuarios y sesiones de estrés
+        const users = await User.findAll({
+            attributes: ['id', 'username', 'email'],
+            where: whereClause,
+            include: [
+                {
+                    model: UserResponses,
+                    required: false,
+                    attributes: [],
+                    include: [
+                        {
+                            model: Hierarchical_level,
+                            attributes: ['level'],
+                            required: false
+                        },
+                        {
+                            model: Sedes,
+                            attributes: ['sede'],
+                            required: false
+                        }
+                    ]
+                },
+                {
+                    model: UserEstresSession,
+                    attributes: ['estres_nivel_id'],
+                    where: Sequelize.where(
+                        Sequelize.fn('DATE', Sequelize.col('created_at')),
+                        dateFilter
+                    ),
+                    required: false
+                }
+            ],
+            raw: true,
+            nest: true
+        });
+
+        // Agrupar usuarios por sede y calcular niveles de estrés
+        const sedesTotales: { [key: string]: { LEVE: number; MODERADO: number; ALTO: number; Pendiente: number } } = {};
+
+        users.forEach(user => {
+            const sede = user.userresponses?.sedes?.sede || 'sin_asignar';
+            const estresNivel = user.userestressessions?.estres_nivel_id || 'pendiente';
+
+            if (!sedesTotales[sede]) {
+                sedesTotales[sede] = { LEVE: 0, MODERADO: 0, ALTO: 0, Pendiente: 0 };
+            }
+
+            if (estresNivel === 1) sedesTotales[sede].LEVE++;
+            else if (estresNivel === 2) sedesTotales[sede].MODERADO++;
+            else if (estresNivel === 3) sedesTotales[sede].ALTO++;
+            else sedesTotales[sede].Pendiente++;
+        });
+
+        return res.status(200).json({
+            sedes: sedesTotales,
+            dates: {
+                fecha_consultada: dateFilter,
+                init: sessionDates?.init_date ? new Date(sessionDates.init_date).toISOString().split('T')[0] : null,
+                fin: sessionDates?.end_date ? new Date(sessionDates.end_date).toISOString().split('T')[0] : null
+            },
+        });
+
+        } catch (error: any) {
+          console.error('Error en listCompanyUsers:', error);
+          return res.status(500).json({
+              message: 'Error al obtener los usuarios',
+              error: error.message
+          });
+      }
+    }
 }
 export default new UserController();
