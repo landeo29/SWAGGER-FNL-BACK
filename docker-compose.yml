@@ -42,8 +42,6 @@ services:
     env_file:
       - .env
     restart: always
-    mem_limit: 400m         # ✅ Restricción de RAM
-    memswap_limit: 2g       # ✅ Límite de Swap
     logging:
       driver: "json-file"
       options:
