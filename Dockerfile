@@ -1,5 +1,5 @@
 # Usa Node.js 22 como base
-FROM python3.13-nodejs18-alpine
+FROM node:22
 
 # Establece el directorio de trabajo en el contenedor
 WORKDIR /app
