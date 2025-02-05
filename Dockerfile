@@ -1,21 +1,28 @@
-# Usa Node.js 22 como base
-FROM node:18-alpine
+# Usa Python como base y luego instala Node.js
+FROM python:3.10-bullseye
 
-# Establece el directorio de trabajo en el contenedor
+# Establece el directorio de trabajo
 WORKDIR /app
 
-# Copia el package.json y package-lock.json
-COPY package*.json ./
+# Instala Node.js, npm y dependencias de Python
+RUN apt update && apt install -y nodejs npm
 
-# Instala las dependencias
+# Instala TypeScript globalmente
+RUN npm install -g typescript
+
+# Copia y instala dependencias de Node.js
+COPY package*.json ./
 RUN npm install
 
-# Copia todo el código fuente al contenedor
+# Copia el código fuente
 COPY . .
 
-# Expone el puerto 3000 para la aplicación
+# Instala dependencias de Python si existe un requirements.txt
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Expone el puerto 3000
 EXPOSE 3000
 
-# Ejecuta la aplicación
+# Comando de inicio: permite correr tanto Node como Python
 CMD ["sh", "-c", "npm run tsc && npm run start"]
-#CMD ["npm","run","dev"]
