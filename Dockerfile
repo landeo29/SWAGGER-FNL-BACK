@@ -1,5 +1,5 @@
 # Usa Node.js 22 como base
-FROM node:22
+FROM node:18-alpine
 
 # Establece el directorio de trabajo en el contenedor
 WORKDIR /app
