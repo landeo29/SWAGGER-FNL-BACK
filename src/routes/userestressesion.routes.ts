@@ -97,4 +97,6 @@ UserEstresSesionRoutes.get('/userestresessions/:userId/grafica', UserEstresSessi
  */
 UserEstresSesionRoutes.get('/userestresessions/empresa', Authorization,UserEstresSessionController.promedioEstresEmpresaPorDia);
 
+UserEstresSesionRoutes.get('/userestresessions/empresa/totalestres', Authorization,UserEstresSessionController.getTotalEmpleadosPorNivelEstres);
+
 export default UserEstresSesionRoutes;

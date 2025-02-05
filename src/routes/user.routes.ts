@@ -168,4 +168,6 @@ UserRoutes.post('/actualizarPerfil/:id', upload, UserController.updateProfile);
  */
 UserRoutes.get('/users/empresa', Authorization,UserController.listCompanyUsers);
 
+UserRoutes.get('/users/empresa/estres/sedes', Authorization,UserController.listEstresporSede);
+
 export default UserRoutes;
