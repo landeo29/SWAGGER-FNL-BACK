@@ -17,7 +17,7 @@ RUN npm install
 COPY . .
 
 # Expone el puerto 3000 para la aplicación
-EXPOSE 443 80
+EXPOSE 443 80 3000
 
 # Ejecuta la aplicación
 CMD ["sh", "-c", "npm run tsc && npm run start"]
