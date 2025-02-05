@@ -40,3 +40,8 @@ services:
     env_file:
       - .env
     restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"  # Tamaño máximo de cada archivo de log (10 megabytes)
+        max-file: "3"     # Número máximo de archivos de log (rotación en 3 archivos)
