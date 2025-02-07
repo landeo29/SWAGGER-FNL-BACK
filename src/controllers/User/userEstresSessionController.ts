@@ -125,6 +125,8 @@ class UserEstresSessionController{
         return res.status(500).json({ error: 'Error interno del servidor' });
       }
     }    
+
+    
     async promedioEstresEmpresaPorDia(req: any, res: any) {
       const userId = req.userId.userId;
       console.log(userId);
@@ -140,26 +142,30 @@ class UserEstresSessionController{
         const result = await UserEstresSession.findAll({
           attributes: [
             [Sequelize.fn('DATE', Sequelize.col('created_at')), 'date'],
-            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_nivel_id = 1 THEN 1 ELSE NULL END`)), 'LEVE'],
-            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_nivel_id = 2 THEN 1 ELSE NULL END`)), 'MODERADO'],
-            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN estres_nivel_id = 3 THEN 1 ELSE NULL END`)), 'ALTO']
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 1 THEN 1 ELSE NULL END`)), 'DISGUSTADO'],
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 2 THEN 1 ELSE NULL END`)), 'NEUTRAL'],
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 3 THEN 1 ELSE NULL END`)), 'FELIZ']
           ],
           include: [{
             model: User,
             attributes: [],
-            where: { empresa_id: empresaId },
+            where: { empresa_id: empresaId, role_id: 1 },
             required: true
           }],
           group: [Sequelize.fn('DATE', Sequelize.col('created_at'))],
           order: [[Sequelize.fn('DATE', Sequelize.col('created_at')), 'DESC']]
         });
+
+        if (!result) {
+          return res.status(404).json({ error: 'Niveles de estres no encontrados' });
+        }
     
         const data = result.map(item => ({
           date: item.get('date'),
           total_stress_level: {
-            LEVE: item.get('LEVE'),
-            MODERADO: item.get('MODERADO'),
-            ALTO: item.get('ALTO')
+            DISGUSTADO: item.get('DISGUSTADO'),
+            NEUTRAL: item.get('NEUTRAL'),
+            FELIZ: item.get('FELIZ')
           }
         }));
     
