@@ -23,7 +23,13 @@ class MetricasController {
       const empresa_id = req.params.empresa_id;
       const cant = await User.count({
         where: {
-          empresa_id,
+          user_id: {
+            [Op.ne]: 1, // Excluye los mensajes enviados por el bot (user_id = 1)
+          },
+          role_id: {
+            [Op.ne]: 3, // Excluye los roles con id 3
+          },
+          empresa_id: empresa_id,
         },
       });
       if (!cant)
@@ -243,6 +249,136 @@ class MetricasController {
   
   
 
+  async InteraccionApp2(req: any, res: any) {
+    try {
+      const empresa_id = req.params.empresa_id;
+      const dia = req.params.dia;
+
+      // 1. Obtener los usuarios que pertenecen a la empresa
+      const users = await User.findAll({
+        where: { empresa_id: empresa_id }
+      });
+
+      if (!users || users.length === 0) {
+        return res.status(404).json({ error: "No se encontraron usuarios para esta empresa" });
+      }
+
+      const todayLima = moment().tz("America/Lima").startOf("day");
+
+      const startOfDayUTC = todayLima.clone().tz("UTC").format("YYYY-MM-DD HH:mm:ss");
+      const endOfDayUTC = todayLima.clone().tz("UTC").endOf("day").format("YYYY-MM-DD HH:mm:ss");
+
+      console.log(`Buscando actividades entre ${startOfDayUTC} y ${endOfDayUTC}`);
+
+  
+      // 2. Buscar las actividades completadas hoy por cada usuario, solo una vez por usuario
+      const usuariosCompletaronHoy = await UserPrograma.findAll({
+        where: {
+          dia: dia,
+          completed_date: { [Op.ne]: null }
+        },
+        include: [
+          {
+            model: User,
+            required: true,
+            where: { empresa_id: empresa_id },
+            attributes: ['username'] 
+          },
+        ],
+        raw: true, // 🔥 Devuelve datos en formato plano
+        nest: true // 🔥 Anida correctamente las relaciones
+      });
+
+
+      const data = usuariosCompletaronHoy.map(item => ({
+          user_id: item.user_id, // ✅ Ahora se puede acceder directamente sin `get()`
+          username: item.user.username
+      }));
+
+      return res.status(200).json({data: data})
+    } catch (error) {
+      console.error("Error en InteraccionApp:", error);
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+  }
+  
+  async EstresSegunFuncy(req: any, res: any){
+    try{
+      const user_id = req.params.user_id;
+
+      const UserScore = await Message.findAll({
+        where:{user_id: user_id},
+        attributes:['score']
+      })
+
+      if (UserScore.length === 0) {
+        return res.status(404).json({ message: "No hay Score disponible" });
+      }
+
+      // Extraer los valores de score del array de objetos
+      const scores = UserScore.map((entry) => entry.score);
+      
+      // Calcular el promedio
+      const averageScore =
+        scores.reduce((acc, score) => acc + score, 0) / scores.length;
+
+      const finalScore = averageScore > 0 ? 1 : averageScore < 0 ? -1 : 0;
+
+      let nivel_estres = ""
+      if (finalScore == 1){
+        nivel_estres = "Leve"
+      }else if(finalScore == 0){
+        nivel_estres = "Moderado"
+      }else {
+        nivel_estres = "Alto"
+      }
+
+      return res.status(200).json({niv_estres: nivel_estres})
+    } catch (error) {
+      console.error("Error en InteraccionApp:", error);
+      return res.status(500).json({ message: "Error interno del servidor" });
+    }
+  }
+
+
+  async EstrellasDia(req: any, res: any){
+    try{
+
+      const dia = req.params.dia;
+      const empresa_id = req.params.empresa_id;
+
+      const estrellasCount = await UserPrograma.findAll({
+        where:{
+          dia: dia,
+          completed_date: { [Op.ne]: null }
+        },
+        include: {
+          model: User,
+          required: true,
+          where:{
+            empresa_id: empresa_id
+          }
+        }
+      })
+
+      if (!estrellasCount){
+        return res.status(404).json({ message: `Los usuarios de la empresa ${empresa_id} no han completado actividades` });
+      }
+
+      
+      const totalEstrellas = estrellasCount.reduce((sum, item) => sum + (item.estrellas || 0), 0);
+      const promedio = totalEstrellas / estrellasCount.length;
+
+      return res.json({ promedioEstrellas: promedio.toFixed(2) });
+
+
+    } catch (error) {
+      console.error("Error en InteraccionApp:", error);
+      return res.status(500).json({ message: "Error interno del servidor" });
+    }
+  }
+
+
   async InteraccionApp(req: any, res: any) {
     try {
       const empresa_id = req.params.empresa_id;
@@ -299,44 +435,45 @@ class MetricasController {
       res.status(500).json({ message: "Error interno del servidor" });
     }
   }
-  
-  async EstresSegunFuncy(req: any, res: any){
-    try{
-      const user_id = req.params.user_id;
 
-      const UserScore = await Message.findAll({
-        where:{user_id: user_id},
-        attributes:['score']
+
+  async EmojisDia(req: any, res: any){
+    try{
+
+      const dia = req.params.dia;
+      const empresa_id = req.params.empresa_id;
+
+      const estrellasCount = await UserPrograma.findAll({
+        where:{
+          dia: dia,
+          completed_date: { [Op.ne]: null }
+        },
+        include: {
+          model: User,
+          required: true,
+          where:{
+            empresa_id: empresa_id
+          }
+        }
       })
 
-      if (UserScore.length === 0) {
-        return res.status(404).json({ message: "No hay Score disponible" });
+      if (!estrellasCount){
+        return res.status(404).json({ message: `Los usuarios de la empresa ${empresa_id} no han completado actividades` });
       }
 
-      // Extraer los valores de score del array de objetos
-      const scores = UserScore.map((entry) => entry.score);
       
-      // Calcular el promedio
-      const averageScore =
-        scores.reduce((acc, score) => acc + score, 0) / scores.length;
+      const totalEstrellas = estrellasCount.reduce((sum, item) => sum + (item.estrellas || 0), 0);
+      const promedio = totalEstrellas / estrellasCount.length;
 
-      const finalScore = averageScore > 0 ? 1 : averageScore < 0 ? -1 : 0;
+      return res.json({ promedioEstrellas: promedio.toFixed(2) });
 
-      let nivel_estres = ""
-      if (finalScore == 1){
-        nivel_estres = "Leve"
-      }else if(finalScore == 0){
-        nivel_estres = "Moderado"
-      }else {
-        nivel_estres = "Alto"
-      }
 
-      return res.status(200).json({niv_estres: nivel_estres})
     } catch (error) {
       console.error("Error en InteraccionApp:", error);
       return res.status(500).json({ message: "Error interno del servidor" });
     }
   }
+
 
 }
 
