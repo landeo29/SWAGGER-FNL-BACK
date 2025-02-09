@@ -4,6 +4,7 @@ import { Sedes } from "../../models/User/sedes";
 //import Sequelize from "sequelize";
 import { UserResponses } from "../../models/User/user_responses";
 import { Op } from 'sequelize';
+
 class EmpresaController{
 
     async getById(req: any, res: any){
