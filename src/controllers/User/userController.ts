@@ -599,53 +599,66 @@ class UserController {
       const sedesTotales: { [key: string]: { LEVE: number; MODERADO: number; ALTO: number; Pendiente: number } } = {};
 
       users.forEach(user => {
-          const sede = user.userresponses?.sedes?.sede || 'sin_asignar';
-          const estresNivel = user.userestressessions?.estres_nivel_id || 'pendiente';
+        const sede = user.userresponses?.sedes?.sede || 'sin_asignar'; // Usar sede por defecto si no está asignada
+        const estresNivel = user.userestressessions?.estres_nivel_id || 'pendiente'; // Si no tiene nivel de estrés, se asigna 'pendiente'
 
-          if (!sedesTotales[sede]) {
-              sedesTotales[sede] = { LEVE: 0, MODERADO: 0, ALTO: 0, Pendiente: 0 };
-          }
+        if (!sedesTotales[sede]) {
+          sedesTotales[sede] = { LEVE: 0, MODERADO: 0, ALTO: 0, Pendiente: 0 };
+        }
 
-          if (estresNivel === 1) sedesTotales[sede].LEVE++;
-          else if (estresNivel === 2) sedesTotales[sede].MODERADO++;
-          else if (estresNivel === 3) sedesTotales[sede].ALTO++;
-          else sedesTotales[sede].Pendiente++;
+        // Contar el número de usuarios según el nivel de estrés
+        if (estresNivel === 1) sedesTotales[sede].LEVE++;
+        else if (estresNivel === 2) sedesTotales[sede].MODERADO++;
+        else if (estresNivel === 3) sedesTotales[sede].ALTO++;
+        else sedesTotales[sede].Pendiente++;
       });
 
       return res.status(200).json({
-          sedes: sedesTotales,
+        sedes: sedesTotales,
       });
 
-      } catch (error: any) {
-        console.error('Error en listCompanyUsers:', error);
-        return res.status(500).json({
-            message: 'Error al obtener los usuarios',
-            error: error.message
-        });
+    } catch (error: any) {
+      console.error('Error al obtener los usuarios por sede y nivel de estrés:', error);
+      return res.status(500).json({
+        message: 'Error al obtener los usuarios agrupados por sede',
+        error: error.message
+      });
     }
+  }
 
-  async getPermisos(req: any, res: any){
-    try{
+  // Método para obtener permisos de un usuario
+  async getPermisos(req: any, res: any) {
+    try {
       const { user_id } = req.params;
 
-        const user = await User.findOne({
-          where:{
-            id: user_id
-          },
-          attributes: ['permisopoliticas', 'userresponsebool', 'testestresbool']
-        });
-        if (!user) {
-          return res.status(404).json({ error: "Usuario no encontrado" });
+      const user = await User.findOne({
+        where: {
+          id: user_id
+        },
+        attributes: ['permisopoliticas', 'userresponsebool', 'testestresbool']
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+
+      // Enviar solo los permisos del usuario
+      res.status(200).json({
+        permisos: {
+          permisopoliticas: user.permisopoliticas,
+          userresponsebool: user.userresponsebool,
+          testestresbool: user.testestresbool
         }
-        res.status(200).json(user);
+      });
 
     } catch (error: any) {
-      console.error('Error en listCompanyUsers:', error);
+      console.error('Error al obtener los permisos del usuario:', error);
       return res.status(500).json({
-          message: 'Error al obtener los usuarios',
-          error: error.message
+        message: 'Error al obtener los permisos',
+        error: error.message
       });
     }
   }
 }
+
 export default new UserController();
