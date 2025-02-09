@@ -125,6 +125,8 @@ class UserEstresSessionController{
         return res.status(500).json({ error: 'Error interno del servidor' });
       }
     }    
+
+    
     async promedioEstresEmpresaPorDia(req: any, res: any) {
       const userId = req.userId.userId;
       console.log(userId);
@@ -140,6 +142,7 @@ class UserEstresSessionController{
         const result = await UserEstresSession.findAll({
           attributes: [
             [Sequelize.fn('DATE', Sequelize.col('created_at')), 'date'],
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 1 THEN 1 ELSE NULL END`)), 'DISGUSTADO'],
             [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 1 THEN 1 ELSE NULL END`)), 'INFELIZ'],
             [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 2 THEN 1 ELSE NULL END`)), 'NEUTRAL'],
             [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 3 THEN 1 ELSE NULL END`)), 'FELIZ']
@@ -153,10 +156,16 @@ class UserEstresSessionController{
           group: [Sequelize.fn('DATE', Sequelize.col('created_at'))],
           order: [[Sequelize.fn('DATE', Sequelize.col('created_at')), 'DESC']]
         });
+
+        if (!result) {
+          return res.status(404).json({ error: 'Niveles de estres no encontrados' });
+        }
     
         const data = result.map(item => ({
           date: item.get('date'),
           total_stress_level: {
+
+            DISGUSTADO: item.get('DISGUSTADO'),
             INFELIZ: item.get('INFELIZ'),
             NEUTRAL: item.get('NEUTRAL'),
             FELIZ: item.get('FELIZ')
