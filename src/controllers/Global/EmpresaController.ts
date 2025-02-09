@@ -3,7 +3,7 @@ import { User } from "../../models/User/user";
 import { Sedes } from "../../models/User/sedes";
 //import Sequelize from "sequelize";
 import { UserResponses } from "../../models/User/user_responses";
-
+import { Op } from 'sequelize';
 class EmpresaController{
 
     async getById(req: any, res: any){
@@ -29,7 +29,9 @@ class EmpresaController{
             // Get all users with their sede information
             const users = await User.findAll({
                 where: {
-                    empresa_id: empresaId
+                    empresa_id: empresaId,
+                    role_id: 1, // Excluir Administradores
+                    id: { [Op.notIn]: [1] } // Excluir Fancy
                 },
                 include: [{
                     model: UserResponses,
@@ -47,7 +49,7 @@ class EmpresaController{
             // Process the results to get the distribution
             const distribution: { [key: string]: number } = {};
             users.forEach((user: any) => {
-                const sede = user.userresponses?.sedes?.sede || 'Otro';
+                const sede = user.userresponses?.sedes?.sede || 'Pendiente';
                 distribution[sede] = (distribution[sede] || 0) + 1;
             });
 
@@ -58,7 +60,7 @@ class EmpresaController{
                 total,
                 detalles: users.map((user: any) => ({
                     username: user.username,
-                    sede: user.userresponses?.sedes?.sede || 'Otro'
+                    sede: user.userresponses?.sedes?.sede || 'Pendiente'
                 }))
             };
    

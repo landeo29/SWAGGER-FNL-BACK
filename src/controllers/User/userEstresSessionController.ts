@@ -143,6 +143,7 @@ class UserEstresSessionController{
           attributes: [
             [Sequelize.fn('DATE', Sequelize.col('created_at')), 'date'],
             [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 1 THEN 1 ELSE NULL END`)), 'DISGUSTADO'],
+            [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 1 THEN 1 ELSE NULL END`)), 'INFELIZ'],
             [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 2 THEN 1 ELSE NULL END`)), 'NEUTRAL'],
             [Sequelize.fn('COUNT', Sequelize.literal(`CASE WHEN caritas = 3 THEN 1 ELSE NULL END`)), 'FELIZ']
           ],
@@ -163,7 +164,9 @@ class UserEstresSessionController{
         const data = result.map(item => ({
           date: item.get('date'),
           total_stress_level: {
+
             DISGUSTADO: item.get('DISGUSTADO'),
+            INFELIZ: item.get('INFELIZ'),
             NEUTRAL: item.get('NEUTRAL'),
             FELIZ: item.get('FELIZ')
           }
@@ -180,7 +183,6 @@ class UserEstresSessionController{
 
     async getTotalEmpleadosPorNivelEstres(req: any, res: any){
       const userId = req.userId.userId;
-      const fechaParam = req.query.date; // Parámetro opcional para la fecha
       
       try {
         const user = await User.findByPk(userId);
@@ -190,37 +192,6 @@ class UserEstresSessionController{
     
         const empresaId = user.empresa_id;
         
-        let fechaBusqueda;
-        let fechaFormateada;
-
-        if (fechaParam) {
-          // Si se proporciona fecha, usarla
-          fechaBusqueda = new Date(fechaParam);
-          fechaFormateada = fechaBusqueda.toISOString().split('T')[0];
-        } else {
-          // Si no hay fecha, obtener la última fecha con registros
-          const ultimoRegistro = await UserEstresSession.findOne({
-            include: [{
-              model: User,
-              attributes: [],
-              where: { empresa_id: empresaId },
-              required: true
-            }],
-            order: [['created_at', 'DESC']],
-            attributes: [
-              [Sequelize.fn('DATE', Sequelize.col('created_at')), 'fecha']
-            ]
-          });
-
-          if (!ultimoRegistro) {
-            return res.status(404).json({ 
-              error: 'No se encontraron registros para esta empresa' 
-            });
-          }
-
-          fechaFormateada = ultimoRegistro.get('fecha');
-        }
-    
         const result = await UserEstresSession.findAll({
           attributes: [
             [Sequelize.literal(`
@@ -239,11 +210,7 @@ class UserEstresSessionController{
             attributes: [],
             where: { empresa_id: empresaId },
             required: true
-          }],
-          where: Sequelize.where(
-            Sequelize.fn('DATE', Sequelize.col('created_at')),
-            fechaFormateada
-          )
+          }]
         });
     
         if (!result || result.length === 0) {
@@ -253,7 +220,6 @@ class UserEstresSessionController{
         }
     
         const promedioData = {
-          fecha: fechaFormateada,
           promedio_estres: Number(result[0].get('promedio_estres')).toFixed(2),
           desglose: {
             LEVE: result[0].get('LEVE'),

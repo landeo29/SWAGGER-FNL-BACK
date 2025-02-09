@@ -603,5 +603,28 @@ class UserProgramaController {
       return res.status(500).json({ error: 'Error al obtener actividades completadas' }); 
     }
   }
+  async getActivityCompleted (req: any, res: any) {
+    const { userId, dia } = req.params;
+
+    try {
+      const userPrograma = await UserPrograma.findOne({
+        where: {
+          user_id: userId,
+          dia: dia,
+        },
+        attributes: ['completed_date'], 
+      });
+
+      if (userPrograma) {
+        const isCompleted = userPrograma.completed_date !== null;
+        res.status(200).json({ isCompleted });
+      } else {
+        res.status(200).json({ isCompleted: false });
+      }
+    } catch (error) {
+      console.error('Error al consultar la base de datos:', error);
+      res.status(500).json({ message: 'Error interno del servidor' });
+    }
+  };
 }
 export default UserProgramaController;
