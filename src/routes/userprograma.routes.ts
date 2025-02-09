@@ -251,4 +251,6 @@ UserProgramaRouter.post('/generateActivitys', userprogramacontroller.generar);
  *          description: Error de validacion.
  */
 UserProgramaRouter.get('/estrellas/:userId', userprogramacontroller.getStars);
+
+UserProgramaRouter.get('/:userId/act/:dia', userprogramacontroller.getActivityCompleted);
 export default UserProgramaRouter;
