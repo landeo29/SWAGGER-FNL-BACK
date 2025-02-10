@@ -5,7 +5,6 @@ import { User } from "../../models/User/user";
 //import database from "../../config/database";
 import { Message } from "../../models/ChatBot/message";
 import { Op } from "sequelize";
-import { endOfDay, startOfDay } from "date-fns";
 import { EstresNiveles } from "../../models/Clasificacion/estres_niveles";
 import { Empresas } from "../../models/Global/empresas";
 import { EstresContador } from "../../models/Clasificacion/estres_contador";
@@ -94,44 +93,53 @@ class MetricasController {
     }
   }
   
+
   async EmpleadosUsaronFuncy(req: any, res: any) {
     try {
       const empresa_id = req.params.empresa_id;
-      const startOfDayLocal = startOfDay(new Date());
-      const endOfDayLocal = endOfDay(new Date());
-      console.log("hoy: ", startOfDayLocal, endOfDayLocal);
+
+      // Obtener inicio y fin del día en zona horaria de Lima y convertir a UTC
+      const todayLima = moment().tz("America/Lima").startOf("day");
+      const startOfDayUTC = todayLima.clone().tz("UTC").toDate();
+      const endOfDayUTC = todayLima.clone().tz("UTC").endOf("day").toDate();
+
+      console.log(`Buscando mensajes entre ${startOfDayUTC} y ${endOfDayUTC}`);
+
+      // Contar mensajes enviados por empleados (excluyendo user_id = 1) dentro del día
       const cantidadMensajes = await Message.count({
-        
         where: {
           user_id: {
-            [Op.ne]: 1, // Excluye los mensajes enviados por el bot (user_id = 1)
+            [Op.ne]: 1, // Excluir mensajes del bot
           },
           created_at: {
-            [Op.between]: [startOfDayLocal, endOfDayLocal], // Filtrar por fecha
+            [Op.between]: [startOfDayUTC, endOfDayUTC], // Filtrar por fecha
           },
         },
         include: [
           {
             model: User,
-            as: "sender", // Especificar el alias
+            as: "sender", // Alias correcto
             where: {
               empresa_id: empresa_id, // Filtrar por empresa_id
             },
           },
         ],
-        group: ['user_id'],
+        group: ["user_id"],
       });
+
       return res.status(200).json({ cant: cantidadMensajes.length });
-    }catch (error) {
-      console.error("Error en EmpleadosUsaronFuncyHoy:", error);
+
+    } catch (error) {
+      console.error("Error en EmpleadosUsaronFuncy:", error);
       res.status(500).json({ message: "Error interno del servidor" });
     }
   }
 
 
+
   async CausaEstres(req: any, res: any) {
     const areaId = req.params.areaId;  // ID del área que se pasa como parámetro
-  
+    const empresa_id = req.params.empresa_id;
     try {
       if (!areaId) {
         return res.status(400).json({ message: "El parámetro areaId es obligatorio." });
@@ -150,31 +158,46 @@ class MetricasController {
       // Obtener los usuarios que están relacionados con esos niveles jerárquicos
       const usuariosEnArea = await UserResponses.findAll({
         where: {
-          hierarchical_level_id: hierarchicalLevelIds,  // Filtramos por los niveles jerárquicos
+          hierarchical_level_id: hierarchicalLevelIds, // Filtramos por los niveles jerárquicos
         },
+        attributes: ["user_id"], // Solo traemos el user_id para evitar duplicados
+        group: ["user_id"], // Agrupamos por user_id para evitar repeticiones
         include: [
           {
             model: User,
-            as: 'user',  // Asegúrate de tener bien definida la relación entre UserResponse y User
-            required: true,  // Solo incluir respuestas que correspondan a un usuario
+            as: "user", // Asegúrate de que la relación esté bien definida
+            required: true, // Solo incluir respuestas que correspondan a un usuario
+            where: {
+                empresa_id: empresa_id
+            }
           },
           {
-              model: Hierarchical_level,
-              as: 'hierarchical_level',  // Asegúrate de definir bien la relación
-              attributes: ['id', 'level']  // Solo necesitamos el ID y el nombre del cargo
-          }
-        ]
+            model: Hierarchical_level,
+            as: "hierarchical_level", // Asegúrate de definir bien la relación
+            attributes: ["id", "level"], // Solo necesitamos el ID y el nivel jerárquico
+          },
+        ],
       });
+      
   
       // Extraer los IDs de los usuarios de los niveles jerárquicos
       const userIds = usuariosEnArea.map(userResponse => userResponse.user_id);
   
       // Obtener los mensajes de esos usuarios
       const mensajes = await Message.findAll({
-          where: { user_id: userIds },
-          attributes: ["factor_psicosocial", "user_id"]
-      });
-      
+        where: { user_id: userIds },
+        attributes: ["factor_psicosocial", "user_id"],
+        group: ["factor_psicosocial", "user_id"], // 🔴 Agrupar por factor y usuario
+        include: [{
+            model: User,
+            as: "sender", // 🔴 Especificar alias
+            where: {
+                empresa_id: empresa_id
+            }
+        }]
+    });
+    
+    
       const userCargoMap = new Map();
       usuariosEnArea.forEach(userResponse => {
             userCargoMap.set(userResponse.user_id, userResponse.hierarchical_level.level);
