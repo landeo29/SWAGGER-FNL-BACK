@@ -24,7 +24,7 @@ MetricasRouter.get("/EmpleadosEstressPorcentaje/:empresa_id", metricasController
 
 MetricasRouter.get("/UsanFuncyHoy/:empresa_id", metricasController.EmpleadosUsaronFuncy);
 
-MetricasRouter.get("/CausasEstres/:areaId", metricasController.CausaEstres);
+MetricasRouter.get("/CausasEstres/:areaId/:empresa_id", metricasController.CausaEstres);
 
 MetricasRouter.get("/total_empl_estres/:empresa_id", metricasController.TotalEmplEstres);
 
