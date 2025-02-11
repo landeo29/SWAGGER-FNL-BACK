@@ -124,4 +124,15 @@ MessagesRoutes.post('/guardarMensajeFromBot', MessageController.saveMessageFromB
  */
 MessagesRoutes.get('/getstatsfuncy', MessageController.getStatsFuncy);
 
+// Obtener interacciones de un usuario en el día actual
+MessagesRoutes.get("/messages/daily-interactions/:userId", MessageController.getUserDailyInteractions);
+
+// Obtener el total de interacciones de todos los usuarios en el día actual
+MessagesRoutes.get("/messages/daily-interactions-empresa/:empresa_id", MessageController.getTotalDailyInteractions);
+// Obtener las interacciones de un usuario en una fecha específica
+MessagesRoutes.get("/messages/interactions/:userId/:date", MessageController.getUserInteractionsByDate);
+
+// Obtener los días de uso de Funcy para un usuario
+MessagesRoutes.get("/messages/usage-days/:userId", MessageController.getUserUsageDays);
+
 export default MessagesRoutes;
