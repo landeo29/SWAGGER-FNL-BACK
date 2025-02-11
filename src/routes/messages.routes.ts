@@ -128,8 +128,7 @@ MessagesRoutes.get('/getstatsfuncy', MessageController.getStatsFuncy);
 MessagesRoutes.get("/messages/daily-interactions/:userId", MessageController.getUserDailyInteractions);
 
 // Obtener el total de interacciones de todos los usuarios en el día actual
-MessagesRoutes.get("/messages/daily-interactions", MessageController.getTotalDailyInteractions);
-
+MessagesRoutes.get("/messages/daily-interactions-empresa/:empresa_id", MessageController.getTotalDailyInteractions);
 // Obtener las interacciones de un usuario en una fecha específica
 MessagesRoutes.get("/messages/interactions/:userId/:date", MessageController.getUserInteractionsByDate);
 

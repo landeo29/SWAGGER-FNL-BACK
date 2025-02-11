@@ -22,7 +22,7 @@ class MetricasController {
       const empresa_id = req.params.empresa_id;
       const cant = await User.count({
         where: {
-          user_id: {
+          id: {
             [Op.ne]: 1, // Excluye los mensajes enviados por el bot (user_id = 1)
           },
           role_id: {
@@ -38,6 +38,7 @@ class MetricasController {
       console.log("Error: ", error.message);
     }
   }
+  
   async EmpleadosEstressPorcentaje(req: any, res: any) {
     try {
       const empresa_id = req.params.empresa_id;

@@ -139,26 +139,36 @@ class MessageController {
     }
   }
 
-  async getTotalDailyInteractions(_req: any, res: any) {
+  async getTotalDailyInteractions(req: any, res: any) {
     try {
-        const localDate = moment.tz(new Date(), "America/Lima").startOf('day'); // Inicio del día actual
-        const endOfDay = moment.tz(new Date(), "America/Lima").endOf('day'); // Fin del día actual
+        const { empresa_id } = req.params;
 
+        const localDate = moment.tz(new Date(), "America/Lima").startOf('day');// Inicio del día actual
+        const endOfDay = moment.tz(new Date(), "America/Lima").endOf('day');// Fin del día actual
         // Contar todos los mensajes del día, sin importar el usuario
         const totalInteractions = await Message.count({
-            where: {
-                created_at: {
-                    [Op.between]: [localDate.toDate(), endOfDay.toDate()],
-                },
-            },
-        });
+          include: [{
+              model: User,
+              as: 'sender',
+              where: { empresa_id: empresa_id },
+              attributes: [], 
+              required: true 
+          }],
+          where: {
+              created_at: {
+                  [Op.between]: [localDate.toDate(), endOfDay.toDate()],
+              },
+          },
+      });
+      
 
-        return res.status(200).json({ totalInteractionsToday: totalInteractions });
+      return res.status(200).json({ totalInteractionsToday: totalInteractions });
     } catch (error) {
         console.error("Error al obtener interacciones totales diarias:", error);
         return res.status(500).json({ error: "Error interno del servidor." });
     }
-  }
+}
+
 
   async getUserUsageDays(req: any, res: any) {
     try {
