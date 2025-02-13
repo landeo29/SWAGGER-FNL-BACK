@@ -410,7 +410,10 @@ class MetricasController {
 
       // 1. Obtener los usuarios que pertenecen a la empresa
       const users = await User.findAll({
-        where: { empresa_id: empresa_id }
+        where: { empresa_id: empresa_id, 
+          role_id: {
+            [Op.ne]: 3,
+          } }
       });
 
       if (!users || users.length === 0) {
@@ -438,7 +441,10 @@ class MetricasController {
           {
             model: User,
             required: true,
-            where: { empresa_id: empresa_id },
+            where: { 
+              empresa_id: empresa_id, 
+              
+            },
           },
         ],
       });
