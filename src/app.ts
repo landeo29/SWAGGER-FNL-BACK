@@ -21,7 +21,10 @@ import role_router from "./routes/user.roles";
 import EmocionesDiariasRoutes from "./routes/emocionesDiarias.routes";
 import SpeechTextRoutes from "./routes/speechtext.routes";
 // @ts-ignore
-import PredictionRoutes from "./routes/predictionRoutes"; // 🔥 Importamos la nueva ruta
+import PredictionRoutes from "./routes/predictionRoutes";
+// @ts-ignore
+import RfRoutes from "./routes/rf.routes";
+
 
 
 
@@ -67,6 +70,7 @@ class App {
     this.server.use("/api/voice", SpeechTextRoutes);
     //this.server.use("/api", TipoTecnicasRoutes);
     this.server.use("/api", PredictionRoutes);
+    this.server.use("/api/randomforest", RfRoutes);
 
 
   }
