@@ -12,7 +12,7 @@ class Database {
 
   init() {
     try {
-      const name = process.env.DB_NAME || 'chat_app2'
+      const name = process.env.DB_NAME || 'chat_app'
       
       const user = process.env.DB_USER || 'root'
       const password = process.env.DB_PASSWORD || ''
